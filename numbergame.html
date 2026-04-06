@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number Guess Pro</title>
+
+<style>
+:root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --primary: #38bdf8;
+    --accent: #fbbf24;
+    --danger: #ef4444;
+}
+
+body {
+    background: var(--bg);
+    color: white;
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.game-box {
+    background: var(--card);
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    width: 320px;
+    position: relative;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.stat {
+    background: rgba(255,255,255,0.05);
+    padding: 8px;
+    border-radius: 8px;
+}
+
+input {
+    width: 80%;
+    font-size: 2rem;
+    text-align: center;
+    margin: 10px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.btn-guess { background: var(--primary); }
+.btn-hint { background: var(--accent); width: 48%; }
+.btn-mega { background: #22c55e; width: 48%; }
+
+#death-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="game-box">
+
+<div id="death-screen">
+    <h1>💀 DEAD</h1>
+    <p id="finalScore"></p>
+    <button onclick="start(true)">TRY AGAIN</button>
+</div>
+
+<h2 id="levelTitle"></h2>
+
+<div class="stats">
+    <div class="stat">❤️ <span id="hp"></span></div>
+    <div class="stat">⏱ <span id="time"></span></div>
+    <div class="stat">🏆 <span id="pts"></span></div>
+    <div class="stat">📊 <span id="tries"></span></div>
+</div>
+
+<input type="number" id="inputBox">
+
+<button class="btn-guess" onclick="check()">GUESS</button>
+
+<div style="display:flex; justify-content:space-between;">
+    <button class="btn-hint" onclick="hint(50)">Hint</button>
+    <button class="btn-mega" onclick="hint(100)">Mega</button>
+</div>
+
+<p id="msg">Start guessing!</p>
+
+</div>
+
+<!-- 🔊 SOUND -->
+<script>
+const loseSound = new Audio("sounds/lose.mp3");
+
+function playLose() {
+    loseSound.currentTime = 0;
+    loseSound.play();
+}
+</script>
+
+<!-- 🧠 GAME LOGIC -->
+<script>
+let s = { ans:0, hp:3, pts:0, time:25, range:10, tries:0, end:false };
+let clock;
+
+// Elements
+const hpEl = document.getElementById("hp");
+const timeEl = document.getElementById("time");
+const ptsEl = document.getElementById("pts");
+const triesEl = document.getElementById("tries");
+const msgEl = document.getElementById("msg");
+const inputEl = document.getElementById("inputBox");
+const levelEl = document.getElementById("levelTitle");
+const deathScreen = document.getElementById("death-screen");
+const finalScoreEl = document.getElementById("finalScore");
+
+function start(full){
+    clearInterval(clock);
+    deathScreen.style.display = "none";
+
+    if(full){
+        s.pts = 0;
+        s.range = 10;
+        s.hp = 3;
+    }
+
+    s.ans = Math.floor(Math.random()*s.range)+1;
+    s.time = 25;
+    s.tries = 0;
+    s.end = false;
+
+    update();
+    timer();
+}
+
+function update(){
+    hpEl.innerText = "❤️".repeat(s.hp);
+    timeEl.innerText = s.time;
+    ptsEl.innerText = s.pts;
+    triesEl.innerText = s.tries;
+    levelEl.innerText = "Guess 1 to " + s.range;
+}
+
+function timer(){
+    clock = setInterval(()=>{
+        if(s.end) return;
+
+        s.time--;
+        timeEl.innerText = s.time;
+
+        if(s.time <= 0) die();
+    },1000);
+}
+
+function check(){
+    if(s.end) return;
+
+    let v = parseInt(inputEl.value);
+    if(isNaN(v)) return;
+
+    s.tries++;
+
+    if(v === s.ans){
+        clearInterval(clock);
+        s.end = true;
+
+        s.pts += 100;
+        msgEl.innerText = "✅ Correct!";
+        msgEl.style.color = "lightgreen";
+
+        s.range += 10;
+        s.hp = Math.min(5, s.hp + 1);
+
+        setTimeout(()=>start(false),1500);
+    } 
+    else {
+        s.hp--;
+        msgEl.innerText = v > s.ans ? "📉 Lower!" : "📈 Higher!";
+        msgEl.style.color = "white";
+
+        if(s.hp <= 0) die();
+    }
+
+    update();
+    inputEl.value = "";
+}
+
+function hint(cost){
+
+    // ❌ Not enough points
+    if(s.pts < cost){
+        msgEl.innerText = "❌ Not enough points!";
+        msgEl.style.color = "red";
+        return;
+    }
+
+    // ⚠️ Game already ended
+    if(s.end){
+        msgEl.innerText = "⚠️ Round finished!";
+        msgEl.style.color = "orange";
+        return;
+    }
+
+    s.pts -= cost;
+
+    if(cost === 50){
+        msgEl.innerText = (s.ans % 2 === 0) 
+            ? "💡 It is EVEN" 
+            : "💡 It is ODD";
+    } else {
+        msgEl.innerText = "🌟 Between " + (s.ans-2) + " and " + (s.ans+2);
+    }
+
+    msgEl.style.color = "#fbbf24";
+
+    update();
+}
+
+function die(){
+    s.end = true;
+    clearInterval(clock);
+
+    playLose(); // 🔊 SOUND
+
+    finalScoreEl.innerText = "Score: " + s.pts;
+    deathScreen.style.display = "flex";
+}
+
+start(true);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Login</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<button id="themeToggle">🌙</button>
+
+<form id="loginForm">
+<h2>Login</h2>
+
+<input type="email" id="loginEmail" placeholder="Email" required>
+
+<div class="password-box">
+  <input type="password" id="loginPassword" placeholder="Password" required>
+  <span onclick="togglePassword('loginPassword')">👁️</span>
+</div>
+
+<button type="submit">Login</button>
+
+<p id="loginError" style="color:red;"></p>
+<p>No account? <a href="signup.html">Sign Up</a></p>
+
+</form>
+
+<script src="theme.js"></script>
+<script src="auth.js"></script>
+
+</body>
+</html>

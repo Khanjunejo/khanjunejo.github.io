@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Signup</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<button id="themeToggle">🌙</button>
+
+<form id="signupForm">
+<h2>Sign Up</h2>
+
+<input type="text" id="username" placeholder="Username" required>
+<input type="email" id="email" placeholder="Email" required>
+
+<div class="password-box">
+  <input type="password" id="password" placeholder="Password" required>
+  <span onclick="togglePassword('password')">👁️</span>
+</div>
+<p style="font-size:12px;color:gray;">
+Password must contain:
+1 Capital letter, 1 Number, 1 Special character, No spaces
+</p>
+
+<button type="submit">Sign Up</button>
+
+<p id="signupError" style="color:red;"></p>
+<p>Already have account? <a href="login.html">Login</a></p>
+
+</form>
+
+<script src="theme.js"></script>
+<script src="auth.js"></script>
+
+</body>
+</html>

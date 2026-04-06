@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Qazi Games</title>
+
+<!-- ✅ Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2698792090132781"
+     crossorigin="anonymous"></script>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+<h1>🎮 Qazi Games</h1>
+
+<nav>
+<a href="index.html">Home</a>
+<a href="about.html">About</a>
+<a href="signup.html">Sign Up</a>
+<a href="login.html">Login</a>
+<a href="privacy.html">Privacy Policy</a>
+
+<span id="userNameDisplay"></span>
+
+<button id="themeToggle">🌙</button>
+<button onclick="logout()">Logout</button>
+</nav>
+</header>
+
+<main>
+
+<!-- ✅ ADDED TEXT -->
+<h2>Welcome to Qazi Games</h2>
+<p>
+Qazi Games is a free online gaming website where you can play fun and simple games like Snake, Tic Tac Toe, Racing, and more. 
+No downloads required — just click and play instantly!
+</p>
+
+<!-- 🔥 SLIDER -->
+<div class="slider">
+  <div class="slides">
+    <div class="slide" onclick="go('shooting.html')">🚀 Space Shooter</div>
+    <div class="slide" onclick="go('snake.html')">🐍 Snake Game</div>
+    <div class="slide" onclick="go('flappy.html')">🐦 Flappy Game</div>
+    <div class="slide" onclick="go('neonCarRacingTurbo.html')">🚗 Neon Racing</div>
+  </div>
+</div>
+
+<h2>🔥 Play Games Instantly</h2>
+
+<div class="games-container">
+
+  <div class="game-card" onclick="go('rps.html')"><h3>✊ RPS</h3></div>
+  <div class="game-card" onclick="go('tictactoe.html')"><h3>❌⭕ TicTacToe</h3></div>
+  <div class="game-card" onclick="go('numbergame.html')"><h3>🔢 Number</h3></div>
+  <div class="game-card" onclick="go('snake.html')"><h3>🐍 Snake</h3></div>
+  <div class="game-card" onclick="go('flappy.html')"><h3>🐦 Flappy</h3></div>
+  <div class="game-card" onclick="go('memory.html')"><h3>🧠 Memory</h3></div>
+  <div class="game-card" onclick="go('shooting.html')"><h3>🚀 Shooting</h3></div>
+  <div class="game-card" onclick="go('neonCarRacingTurbo.html')"><h3>🚗 Racing</h3></div>
+
+</div>
+
+<!-- ✅ EXTRA TEXT (helps approval) -->
+<p>
+We are constantly adding new games to Qazi Games. Stay connected and enjoy unlimited fun anytime, anywhere.
+</p>
+
+</main>
+
+<script>
+// 🎮 NAVIGATION
+function go(page){
+  let user = localStorage.getItem("currentUser");
+
+  if(!user){
+    localStorage.setItem("redirectGame", page);
+    window.location.href = "signup.html";
+  } else {
+    window.location.href = page;
+  }
+}
+
+// 🔓 LOGOUT
+function logout(){
+  localStorage.removeItem("currentUser");
+  alert("Logged out!");
+  window.location.href = "index.html";
+}
+
+// 👤 SHOW USERNAME
+let user = JSON.parse(localStorage.getItem("currentUser"));
+if(user){
+  document.getElementById("userNameDisplay").innerText = "👤 " + user.username;
+}
+</script>
+
+<script src="theme.js"></script>
+<script src="sounds.js"></script>
+
+</body>
+</html>

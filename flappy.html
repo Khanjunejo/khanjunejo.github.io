@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Flappy Bird</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    #gameContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    canvas {
+      border: 2px solid #00f7ff;
+      border-radius: 15px;
+      margin-bottom: 10px;
+    }
+
+    #themeName {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    #flappyScore, #highScore {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 5px;
+    }
+
+    .controls button {
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>🕊 Flappy Bird</h2>
+
+<div id="gameContainer">
+  <p id="themeName">Theme: Sky ☁️</p>
+  <canvas id="flappyCanvas" width="400" height="500"></canvas>
+
+  <p id="flappyScore">Score: 0</p>
+  <p id="highScore">High Score: 0</p>
+
+  <div class="controls">
+    <button onclick="resetFlappy()">🔄 Reset</button>
+    <button onclick="togglePause()">⏸ Pause / ▶ Resume</button>
+    <button onclick="switchTheme()">🎨 Switch Theme</button>
+  </div>
+</div>
+
+<script src="flappy.js"></script>
+<script src="sounds.js"></script>
+</body>
+</html>

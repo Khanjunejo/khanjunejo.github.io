@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GALAXY STRIKE: ETERNAL</title>
+    <style>
+        body { margin: 0; background: #050505; color: white; font-family: 'Courier New', Courier, monospace; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; touch-action: none; }
+        #game-container { position: relative; border: 3px solid #1a1a2e; max-width: 100vw; max-height: 100vh; }
+        canvas { display: block; background: #000; touch-action: none; max-width: 100%; height: auto; }
+        #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; padding: 20px; box-sizing: border-box; }
+        .hud { font-weight: bold; color: #00f7ff; text-shadow: 0 0 10px #00f7ff; font-size: 14px; }
+        #overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; pointer-events: auto; text-align: center; padding: 20px;}
+        button { margin-top: 20px; padding: 15px 40px; background: transparent; border: 2px solid #00f7ff; color: #00f7ff; cursor: pointer; font-weight: bold; font-size: 1.2rem; pointer-events: auto; }
+        button:hover { background: #00f7ff; color: #000; box-shadow: 0 0 20px #00f7ff; }
+        .hp-bar { width: 120px; height: 10px; background: #222; border-radius: 6px; margin-top: 8px; overflow: hidden; border: 1px solid #444; }
+        #hp-fill { width: 100%; height: 100%; background: #00f7ff; transition: 0.1s; }
+        #laser-status { color: #bc00ff; font-size: 12px; margin-top: 10px; display: none; animation: blink 0.5s infinite; }
+        
+        /* Mobile Laser Button */
+        #mobile-laser-btn {
+            position: absolute; bottom: 30px; right: 30px;
+            width: 70px; height: 70px; border-radius: 50%;
+            background: rgba(188, 0, 255, 0.3); border: 2px solid #bc00ff;
+            color: #bc00ff; display: none; align-items: center; justify-content: center;
+            font-weight: bold; pointer-events: auto; z-index: 5;
+            text-shadow: 0 0 5px #bc00ff;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas" width="440" height="650"></canvas>
+    <div id="mobile-laser-btn">LASER</div>
+    <div id="ui">
+        <div style="display:flex; justify-content: space-between;">
+            <div>
+                <div class="hud">HULL INTEGRITY</div>
+                <div class="hp-bar"><div id="hp-fill"></div></div>
+                <div id="laser-status" class="hud">⚡ LASER READY [L]</div>
+            </div>
+            <div style="text-align: right;">
+                <div class="hud" id="scoreIdx">SCORE: 0000</div>
+                <div class="hud" id="stageIdx" style="color:#ff007a">STAGE: 1</div>
+            </div>
+        </div>
+        <div id="overlay">
+            <h1 id="mTitle" style="color:#00f7ff; font-size: 2rem; letter-spacing: 5px; margin-bottom: 10px;">GALAXY STRIKE</h1>
+            <p id="mSub" style="color:#666; font-size: 14px;">PC: ARROWS TO MOVE | SPACE TO FIRE<br>MOBILE: DRAG TO MOVE | AUTO-FIRE</p>
+            <button id="startBtn">ENGAGE</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/** * 🔊 SOUND ENGINE */
+const SOUND_PATH = "sounds/";
+function playSound(name) {
+    const extensions = { bullet: ".mp3", explosion: ".wav", laser: ".wav", win: ".mp3", lose: ".mp3" };
+    const ext = extensions[name] || ".mp3";
+    let sound = new Audio(SOUND_PATH + name + ext);
+    sound.volume = 0.4; 
+    sound.play().catch(e => {});
+}
+
+/** * 🎮 GAME ENGINE */
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const mobileLaser = document.getElementById("mobile-laser-btn");
+
+let gameActive = false, score = 0, frame = 0, stage = 1;
+let enemies = [], bullets = [], eBullets = [], particles = [], powerUps = [], stars = [];
+let player = { x: 200, y: 550, w: 40, h: 40, hp: 100, weapon: 1, hasLaser: false, laserTimer: 0, shield: 0 };
+let boss = null;
+let keys = {};
+let shootCooldown = 0;
+let isTouchDevice = 'ontouchstart' in window;
+
+// Starfield
+for(let i=0; i<80; i++) stars.push({ x: Math.random()*440, y: Math.random()*650, s: Math.random()*2+0.5 });
+
+// PC Events
+window.addEventListener("keydown", e => keys[e.code] = true);
+window.addEventListener("keyup", e => keys[e.code] = false);
+
+// Mobile Events
+canvas.addEventListener("touchmove", e => {
+    if(!gameActive) return;
+    e.preventDefault();
+    let rect = canvas.getBoundingClientRect();
+    let touch = e.touches[0];
+    let tx = (touch.clientX - rect.left) * (canvas.width / rect.width);
+    let ty = (touch.clientY - rect.top) * (canvas.height / rect.height);
+    player.x = tx - player.w/2;
+    player.y = ty - player.h/2;
+    
+    // Boundary checks
+    if(player.x < 0) player.x = 0;
+    if(player.x > 400) player.x = 400;
+    if(player.y < 0) player.y = 0;
+    if(player.y > 610) player.y = 610;
+}, {passive: false});
+
+mobileLaser.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    activateLaser();
+});
+
+function activateLaser() {
+    if(player.hasLaser) {
+        player.laserTimer = 150;
+        player.hasLaser = false;
+        mobileLaser.style.display = "none";
+    }
+}
+
+document.getElementById("startBtn").onclick = () => {
+    document.getElementById("overlay").style.display = "none";
+    if(player.hp <= 0) fullReset();
+    gameActive = true;
+    update();
+};
+
+function fullReset() {
+    score = 0; stage = 1; player.hp = 100; player.weapon = 1; player.hasLaser = false; player.shield = 0;
+    enemies = []; bullets = []; eBullets = []; particles = []; powerUps = []; boss = null;
+    document.getElementById("hp-fill").style.width = "100%";
+}
+
+function spawnParticle(x, y, color, amt = 10) {
+    for(let i=0; i<amt; i++) {
+        particles.push({ x, y, vx:(Math.random()-0.5)*12, vy:(Math.random()-0.5)*12, l:1.0, c:color });
+    }
+}
+
+function triggerBoss(num) {
+    const configs = [
+        { hp: 600, w: 300, h: 80, color: "#5c0099", move: 'slide' },
+        { hp: 1200, w: 200, h: 100, color: "#ff007a", move: 'sine' },
+        { hp: 2000, w: 350, h: 90, color: "#00f7ff", move: 'sniper' },
+        { hp: 3500, w: 150, h: 150, color: "#ffcc00", move: 'teleport' },
+        { hp: 5000, w: 400, h: 120, color: "#ff0000", move: 'charge' }
+    ];
+    let c = configs[num-1];
+    boss = { x: 220-c.w/2, y: -150, ...c, maxHp: c.hp, dir: 2, id: num, timer: 0 };
+}
+
+function spawnPower(x, y) {
+    const r = Math.random();
+    let type;
+    if(r < 0.25) type = {t:'h', c:'#ff0000'}; 
+    else if(r < 0.50) type = {t:'w', c:'#fffb00'}; 
+    else if(r < 0.75) type = {t:'l', c:'#bc00ff'}; 
+    else type = {t:'s', c:'#00f7ff'}; 
+    powerUps.push({ x, y, w:20, h:20, ...type });
+}
+
+function draw() {
+    ctx.clearRect(0, 0, 440, 650);
+    ctx.fillStyle = "#fff";
+    stars.forEach(s => { s.y += s.s; if(s.y > 650) s.y = 0; ctx.fillRect(s.x, s.y, 1.5, 1.5); });
+
+    if(boss) {
+        boss.timer++;
+        if(boss.y < 80) boss.y += 2;
+        else {
+            if(boss.move === 'slide') { boss.x += boss.dir; if(boss.x < 10 || boss.x+boss.w > 430) boss.dir *= -1; }
+            if(boss.move === 'sine') { boss.x = 120 + Math.sin(frame/20)*100; }
+            if(boss.move === 'sniper') { boss.x += boss.dir*2; if(boss.x < 10 || boss.x+boss.w > 430) boss.dir *= -1; }
+            if(boss.move === 'teleport' && frame % 100 === 0) { boss.x = Math.random()*280; spawnParticle(boss.x, boss.y, "#ffcc00"); }
+            if(boss.move === 'charge') { boss.x += boss.dir; if(boss.x < 10 || boss.x+boss.w > 430) boss.dir *= -1; if(frame % 200 < 50) boss.y += 2; else if(boss.y > 80) boss.y -= 1; }
+            
+            if(frame % 45 === 0) {
+                if(boss.id === 1) eBullets.push({x: boss.x+50, y: boss.y+80}, {x: boss.x+250, y: boss.y+80});
+                if(boss.id === 2) for(let i=-2; i<=2; i++) eBullets.push({x: boss.x+boss.w/2, y: boss.y+boss.h, vx: i*2});
+                if(boss.id === 3) eBullets.push({x: player.x+20, y: boss.y+boss.h, vy: 8});
+                if(boss.id === 4) for(let i=0; i<8; i++) eBullets.push({x: boss.x+boss.w/2, y: boss.y+boss.h, vx: Math.cos(i)*4, vy: Math.sin(i)*4});
+                if(boss.id === 5) eBullets.push({x: boss.x+20, y: boss.y+boss.h}, {x: boss.x+boss.w-20, y: boss.y+boss.h}, {x: boss.x+boss.w/2, y: boss.y+boss.h, vy: 10});
+            }
+        }
+        ctx.fillStyle = boss.color;
+        ctx.fillRect(boss.x, boss.y, boss.w, boss.h);
+        ctx.fillStyle = "#222"; ctx.fillRect(boss.x, boss.y-20, boss.w, 8);
+        ctx.fillStyle = "#ff007a"; ctx.fillRect(boss.x, boss.y-20, boss.w * (boss.hp/boss.maxHp), 8);
+        
+        if(boss.hp <= 0) {
+            playSound('explosion'); playSound('win');
+            for(let i=0; i<10; i++) setTimeout(() => spawnParticle(boss.x+Math.random()*boss.w, boss.y+Math.random()*boss.h, "#fff", 20), i*100);
+            boss = null; score += 1000; stage++;
+        }
+    }
+
+    if(player.laserTimer > 0) {
+        if(player.laserTimer === 149) playSound('laser');
+        player.laserTimer--;
+        ctx.fillStyle = "rgba(188, 0, 255, 0.6)";
+        ctx.fillRect(player.x + 15, 0, 10, player.y);
+        enemies.forEach((e, i) => { if(e.x+30 > player.x+15 && e.x < player.x+25) { enemies.splice(i, 1); score += 10; playSound('explosion'); } });
+        if(boss && boss.x+boss.w > player.x+15 && boss.x < player.x+25) boss.hp -= 8;
+    }
+
+    if(player.shield > 0) {
+        player.shield--;
+        ctx.strokeStyle = "#00f7ff"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(player.x+20, player.y+20, 35, 0, Math.PI*2); ctx.stroke();
+    }
+    ctx.fillStyle = "#00f7ff";
+    ctx.beginPath(); ctx.moveTo(player.x+20, player.y); ctx.lineTo(player.x, player.y+40); ctx.lineTo(player.x+40, player.y+40); ctx.fill();
+
+    bullets.forEach((b, i) => {
+        b.y -= 12; ctx.fillStyle = "#fffb00"; ctx.fillRect(b.x, b.y, 4, 12);
+        if(boss && b.x > boss.x && b.x < boss.x+boss.w && b.y < boss.y+boss.h) { boss.hp -= 10; bullets.splice(i, 1); }
+        enemies.forEach((e, ei) => {
+            if(b.x > e.x && b.x < e.x+30 && b.y < e.y+30 && b.y > e.y) {
+                playSound('explosion'); spawnParticle(e.x+15, e.y+15, "#ff007a", 15);
+                if(Math.random() < 0.2) spawnPower(e.x, e.y);
+                enemies.splice(ei, 1); bullets.splice(i, 1); score += 20;
+            }
+        });
+        if(b.y < 0) bullets.splice(i, 1);
+    });
+
+    eBullets.forEach((eb, i) => {
+        eb.y += eb.vy || 6; if(eb.vx) eb.x += eb.vx;
+        ctx.fillStyle = "#ff007a"; ctx.fillRect(eb.x, eb.y, 4, 10);
+        if(eb.x > player.x && eb.x < player.x+40 && eb.y > player.y && eb.y < player.y+40) { eBullets.splice(i, 1); damagePlayer(10); }
+        if(eb.y > 650) eBullets.splice(i, 1);
+    });
+
+    enemies.forEach((e, i) => {
+        e.y += e.s;
+        ctx.fillStyle = "#ff007a"; ctx.fillRect(e.x, e.y, 30, 30);
+        if(e.x < player.x+40 && e.x+30 > player.x && e.y < player.y+40 && e.y+30 > player.y) { enemies.splice(i, 1); damagePlayer(25); }
+        if(e.y > 650) enemies.splice(i, 1);
+    });
+
+    powerUps.forEach((p, i) => {
+        p.y += 2; ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, p.w, p.h);
+        if(p.x < player.x+40 && p.x+20 > player.x && p.y < player.y+40 && p.y+20 > player.y) {
+            if(p.t === 'h') player.hp = Math.min(100, player.hp + 20);
+            if(p.t === 'w') player.weapon = Math.min(3, player.weapon + 1);
+            if(p.t === 'l') { player.hasLaser = true; if(isTouchDevice) mobileLaser.style.display = "flex"; }
+            if(p.t === 's') player.shield = 400; 
+            powerUps.splice(i, 1);
+            document.getElementById("hp-fill").style.width = player.hp + "%";
+        }
+    });
+
+    particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; p.l -= 0.02;
+        ctx.globalAlpha = p.l; ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, 2, 2);
+        if(p.l <= 0) particles.splice(i, 1);
+    });
+    ctx.globalAlpha = 1;
+}
+
+function damagePlayer(amt) {
+    if(player.shield > 0) return; 
+    player.hp -= amt;
+    document.getElementById("hp-fill").style.width = player.hp + "%";
+    playSound('explosion');
+    if(player.hp <= 0) {
+        gameActive = false;
+        playSound('lose');
+        document.getElementById("overlay").style.display = "flex";
+        document.getElementById("mTitle").innerText = "MISSION FAILED";
+        document.getElementById("mSub").innerText = "FINAL SCORE: " + score;
+        mobileLaser.style.display = "none";
+    }
+}
+
+function update() {
+    if(!gameActive) return;
+    frame++;
+
+    // PC Controls
+    if(keys["ArrowLeft"] && player.x > 0) player.x -= 7;
+    if(keys["ArrowRight"] && player.x < 400) player.x += 7;
+    if(keys["ArrowUp"] && player.y > 0) player.y -= 7;
+    if(keys["ArrowDown"] && player.y < 610) player.y += 7;
+    if(keys["KeyL"]) activateLaser();
+
+    // Fire Logic (Auto on Mobile, Space on PC)
+    if((keys["Space"] || isTouchDevice) && shootCooldown <= 0 && player.laserTimer <= 0) {
+        playSound('bullet');
+        if(player.weapon === 1) bullets.push({x: player.x+18, y: player.y});
+        if(player.weapon === 2) bullets.push({x: player.x+5, y: player.y}, {x: player.x+32, y: player.y});
+        if(player.weapon === 3) bullets.push({x: player.x-5, y: player.y+15}, {x: player.x+18, y: player.y}, {x: player.x+42, y: player.y+15});
+        shootCooldown = 12;
+    }
+    
+    if(shootCooldown > 0) shootCooldown--;
+
+    if(!boss) {
+        if(score >= 500 && stage === 1) triggerBoss(1);
+        else if(score >= 1500 && stage === 2) triggerBoss(2);
+        else if(score >= 3000 && stage === 3) triggerBoss(3);
+        else if(frame % 40 === 0) enemies.push({ x: Math.random()*410, y: -30, s: 3+stage });
+    }
+
+    document.getElementById("laser-status").style.display = (player.hasLaser && !isTouchDevice) ? "block" : "none";
+    document.getElementById("scoreIdx").innerText = "SCORE: " + score;
+    document.getElementById("stageIdx").innerText = "STAGE: " + stage;
+
+    draw();
+    requestAnimationFrame(update);
+}
+</script>
+</body>
+</html>
