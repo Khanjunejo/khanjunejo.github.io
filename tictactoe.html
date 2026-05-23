@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tic Tac Toe Pro</title>
+<style>
+  :root {
+    --accent-x: #00f7ff;
+    --accent-o: #ff007a;
+    --bg-dark: #0f172a;
+    --glass: rgba(255, 255, 255, 0.08);
+  }
+
+  body {
+    background: var(--bg-dark);
+    color: white;
+    text-align: center;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 2.2rem;
+    margin: 15px 0;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    background: linear-gradient(to right, var(--accent-x), var(--accent-o));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .scoreboard {
+    display: flex; gap: 20px; margin-bottom: 20px;
+    background: var(--glass); padding: 12px 25px; border-radius: 15px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .score-box { font-weight: bold; font-size: 1.1rem; }
+  #scoreX { color: var(--accent-x); }
+  #scoreO { color: var(--accent-o); }
+
+  .controls { margin-bottom: 20px; width: 90%; max-width: 400px; }
+  .name-inputs { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+  
+  input[type="text"] {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+    color: white; padding: 12px; border-radius: 10px; outline: none;
+    text-align: center; font-size: 0.95rem; width: 42%;
+  }
+
+  /* FIXED DROPDOWN VISIBILITY */
+  select {
+    width: 100%; margin-top: 15px; padding: 12px;
+    background: #1e293b; /* Solid dark background */
+    border: 1px solid var(--accent-x);
+    color: white; border-radius: 10px;
+    font-size: 1rem; cursor: pointer;
+    appearance: none; -webkit-appearance: none;
+  }
+  
+  option {
+    background: #1e293b; /* Ensures options are visible on Android */
+    color: white;
+    padding: 10px;
+  }
+
+  #board {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 20px;
+    width: 310px; height: 310px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  .cell {
+    background: var(--glass); display: flex; align-items: center; justify-content: center;
+    font-size: 2.8rem; font-weight: 900; cursor: pointer; border-radius: 12px;
+    transition: 0.2s; user-select: none;
+  }
+
+  .game-btns { display: flex; gap: 12px; margin-top: 20px; }
+  button {
+    padding: 14px 28px; background: transparent; color: var(--accent-x);
+    border: 2px solid var(--accent-x); border-radius: 50px;
+    font-weight: bold; cursor: pointer; text-transform: uppercase;
+  }
+  button:active { background: var(--accent-x); color: #000; transform: scale(0.95); }
+
+  #result { font-size: 1.6rem; margin-top: 20px; height: 35px; font-weight: bold; }
+  #turn-indicator { margin-bottom: 10px; color: #94a3b8; font-size: 0.9rem; letter-spacing: 1.5px; font-weight: 900;}
+</style>
+</head>
+<body>
+
+<h2>🎮 TIC TAC TOE PRO</h2>
+
+<div class="scoreboard">
+  <div class="score-box">X: <span id="scoreX">0</span></div>
+  <div class="score-box">Draws: <span id="draws">0</span></div>
+  <div class="score-box">O: <span id="scoreO">0</span></div>
+</div>
+
+<div class="controls">
+  <div class="name-inputs">
+    <input type="text" id="playerX" placeholder="Player X Name">
+    <input type="text" id="playerO" placeholder="Player O Name">
+  </div>
+  <label style="font-size: 1rem; cursor: pointer; display: block; margin-top: 10px;">
+    <input type="checkbox" id="aiToggle" onchange="resetBoard()" checked> Play vs AI
+  </label>
+  <select id="difficulty">
+    <option value="easy">Difficulty: Easy</option>
+    <option value="medium">Difficulty: Medium</option>
+    <option value="hard" selected>Difficulty: Hard</option>
+  </select>
+</div>
+
+<div id="turn-indicator">X'S TURN</div>
+
+<div id="board">
+  <div class="cell" data-i="0"></div>
+  <div class="cell" data-i="1"></div>
+  <div class="cell" data-i="2"></div>
+  <div class="cell" data-i="3"></div>
+  <div class="cell" data-i="4"></div>
+  <div class="cell" data-i="5"></div>
+  <div class="cell" data-i="6"></div>
+  <div class="cell" data-i="7"></div>
+  <div class="cell" data-i="8"></div>
+</div>
+
+<div class="game-btns">
+    <button onclick="resetBoard()">🔄 Reset Board</button>
+    <button onclick="clearScore()" style="border-color: #64748b; color: #64748b;">🗑️ Reset Scores</button>
+</div>
+
+<p id="result"></p>
+
+<audio id="winSound" src="sounds/win.mp3"></audio>
+<audio id="loseSound" src="sounds/lose.mp3"></audio>
+
+<script>
+let board = ["","","","","","","","",""];
+let currentPlayer = "X"; 
+let starter = "X"; 
+let gameActive = true;
+let isAiThinking = false;
+let scores = { X: 0, O: 0, draws: 0 };
+
+const cells = document.querySelectorAll(".cell");
+const resultDisplay = document.getElementById("result");
+const turnDisplay = document.getElementById("turn-indicator");
+const aiEnabled = document.getElementById("aiToggle");
+const diffSelect = document.getElementById("difficulty");
+const winSnd = document.getElementById("winSound");
+const loseSnd = document.getElementById("loseSound");
+
+const winPatterns = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+cells.forEach(cell => cell.addEventListener("click", handleClick));
+
+function handleClick() {
+  const i = this.getAttribute("data-i");
+  if (board[i] !== "" || !gameActive || isAiThinking) return;
+
+  placeMarker(i, currentPlayer);
+
+  if (gameActive && aiEnabled.checked && currentPlayer === "O") {
+    isAiThinking = true;
+    setTimeout(aiMove, 600);
+  }
+}
+
+function placeMarker(i, player) {
+  board[i] = player;
+  cells[i].innerText = player;
+  cells[i].style.color = player === "X" ? "var(--accent-x)" : "var(--accent-o)";
+  cells[i].style.textShadow = `0 0 20px ${player === "X" ? "var(--accent-x)" : "var(--accent-o)"}`;
+  
+  if (!checkWinner()) {
+    currentPlayer = (currentPlayer === "X") ? "O" : "X";
+    updateTurnText();
+  }
+}
+
+function aiMove() {
+  if (!gameActive) return;
+  let move;
+  const level = diffSelect.value;
+
+  if (level === "easy") {
+    move = getRandomMove();
+  } else if (level === "medium") {
+    move = Math.random() < 0.5 ? getBestMove() : getRandomMove();
+  } else {
+    move = getBestMove();
+  }
+
+  if (move !== undefined) placeMarker(move, "O");
+  isAiThinking = false;
+}
+
+function getRandomMove() {
+  const available = board.map((v, i) => v === "" ? i : null).filter(v => v !== null);
+  return available[Math.floor(Math.random() * available.length)];
+}
+
+function getBestMove() {
+  let bestScore = -Infinity;
+  let move;
+  for (let i = 0; i < 9; i++) {
+    if (board[i] === "") {
+      board[i] = "O";
+      let score = minimax(board, 0, false);
+      board[i] = "";
+      if (score > bestScore) {
+        bestScore = score;
+        move = i;
+      }
+    }
+  }
+  return move;
+}
+
+function minimax(currBoard, depth, isMax) {
+  let res = checkWinnerSilent();
+  if (res === "O") return 10 - depth;
+  if (res === "X") return depth - 10;
+  if (!currBoard.includes("")) return 0;
+
+  if (isMax) {
+    let best = -Infinity;
+    for (let i=0; i<9; i++) {
+      if (currBoard[i] === "") {
+        currBoard[i] = "O";
+        best = Math.max(best, minimax(currBoard, depth + 1, false));
+        currBoard[i] = "";
+      }
+    }
+    return best;
+  } else {
+    let best = Infinity;
+    for (let i=0; i<9; i++) {
+      if (currBoard[i] === "") {
+        currBoard[i] = "X";
+        best = Math.min(best, minimax(currBoard, depth + 1, true));
+        currBoard[i] = "";
+      }
+    }
+    return best;
+  }
+}
+
+function checkWinner() {
+  for (let p of winPatterns) {
+    const [a, b, c] = p;
+    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+      endGame(board[a]);
+      return true;
+    }
+  }
+  if (!board.includes("")) {
+    endGame("draw");
+    return true;
+  }
+  return false;
+}
+
+function checkWinnerSilent() {
+  for (let p of winPatterns) {
+    const [a, b, c] = p;
+    if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a];
+  }
+  return null;
+}
+
+function endGame(winner) {
+  gameActive = false;
+  if (winner === "draw") {
+    resultDisplay.innerText = "MATCH DRAW 🤝";
+    resultDisplay.style.color = "white";
+    scores.draws++;
+  } else {
+    resultDisplay.innerText = getPlayerName(winner) + " WINS! 🎉";
+    resultDisplay.style.color = (winner === "X") ? "var(--accent-x)" : "var(--accent-o)";
+    scores[winner]++;
+    if (winner === "X") winSnd.play().catch(()=>{}); 
+    else loseSnd.play().catch(()=>{});
+  }
+  updateScoreboard();
+}
+
+function getPlayerName(p) {
+  const name = document.getElementById("player" + p).value.trim();
+  if (p === "O" && aiEnabled.checked) return name || "AI BOT";
+  return name || "PLAYER " + p;
+}
+
+function updateScoreboard() {
+  document.getElementById("scoreX").innerText = scores.X;
+  document.getElementById("scoreO").innerText = scores.O;
+  document.getElementById("draws").innerText = scores.draws;
+}
+
+function updateTurnText() {
+  turnDisplay.innerText = getPlayerName(currentPlayer).toUpperCase() + "'S TURN";
+  turnDisplay.style.color = (currentPlayer === "X") ? "var(--accent-x)" : "var(--accent-o)";
+}
+
+function resetBoard() {
+  board = ["","","","","","","","",""];
+  gameActive = true;
+  isAiThinking = false;
+  
+  // Alternating starter logic
+  starter = (starter === "X") ? "O" : "X";
+  currentPlayer = starter;
+
+  resultDisplay.innerText = "";
+  cells.forEach(c => { c.innerText = ""; c.style.textShadow = ""; });
+  updateTurnText();
+
+  if (aiEnabled.checked && currentPlayer === "O") {
+    isAiThinking = true;
+    setTimeout(aiMove, 600);
+  }
+}
+
+function clearScore() {
+    scores = { X: 0, O: 0, draws: 0 };
+    updateScoreboard();
+}
+</script>
+</body>
+</html>

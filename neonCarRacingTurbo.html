@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEON OVERDRIVE: TURBO</title>
+    <style>
+        :root { 
+            --neon: #00f7ff; 
+            --pink: #ff007a; 
+            --shield: #7cfc00;
+            --nitro: #bc13fe;
+        }
+
+        body { 
+            margin: 0; 
+            background: #020202; 
+            color: white; 
+            font-family: 'Orbitron', sans-serif; 
+            overflow: hidden; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            touch-action: none;
+        }
+
+        #container { 
+            position: relative; 
+            border: 4px solid #111; 
+            box-shadow: 0 0 50px rgba(0, 247, 255, 0.2); 
+            background: #000;
+            max-width: 100vw;
+            max-height: 100vh;
+        }
+
+        canvas { 
+            display: block; 
+            touch-action: none; 
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        #ui-layer { 
+            position: absolute; 
+            top: 0; left: 0; width: 100%; height: 100%; 
+            pointer-events: none; 
+        }
+        
+        #menu { 
+            position: absolute; 
+            inset: 0; 
+            background: rgba(0,0,0,0.9); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 10; 
+            backdrop-filter: blur(12px); 
+            pointer-events: auto;
+        }
+
+        h1 { 
+            font-size: 2.5rem; 
+            letter-spacing: 5px; 
+            margin: 0; 
+            background: linear-gradient(to right, var(--neon), var(--pink)); 
+            background-clip: text;
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            text-shadow: 0 0 20px rgba(0, 247, 255, 0.5); 
+            text-align: center;
+        }
+
+        .sub-text { color: #888; font-size: 0.7rem; margin-top: 10px; text-transform: uppercase; letter-spacing: 5px; }
+        
+        button { 
+            margin-top: 40px; 
+            padding: 15px 40px; 
+            background: rgba(0, 247, 255, 0.1); 
+            border: 2px solid var(--neon); 
+            color: var(--neon); 
+            font-size: 1rem; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            font-family: 'Orbitron';
+        }
+
+        button:hover { 
+            background: var(--neon); 
+            color: black; 
+            box-shadow: 0 0 40px var(--neon); 
+        }
+        
+        .hud { 
+            position: absolute; 
+            top: 20px; left: 20px; 
+            font-size: 1.2rem; 
+            color: var(--neon); 
+            display: none;
+            text-transform: uppercase;
+        }
+
+        #level-tag {
+            position: absolute;
+            top: 20px; right: 20px;
+            color: var(--pink);
+            font-size: 1.2rem;
+            display: none;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 20px;
+            color: #666;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            text-align: center;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div id="container">
+    <canvas id="gameCanvas" width="400" height="650"></canvas>
+    
+    <div id="ui-layer">
+        <div id="menu">
+            <h1>NEON OVERDRIVE</h1>
+            <div class="sub-text">Ultimate Pursuit System</div>
+            <button id="startBtn">ENGAGE SYSTEM</button>
+            <div class="controls-hint">PC: Arrows & Space<br>Mobile: Tap sides & 2-finger Turbo</div>
+        </div>
+        <div class="hud" id="hudScore">SCORE: 0</div>
+        <div id="level-tag">LEVEL 1</div>
+    </div>
+</div>
+
+<script>
+/**
+ * AUDIO ENGINE
+ */
+const sfx = {
+    win: new Audio('sounds/win.mp3'),
+    lose: new Audio('sounds/lose.mp3'),
+    accident: new Audio('sounds/accident.mp3'),
+    boost: new Audio('sounds/boost.mp3'),
+    bg: new Audio('sounds/Race.mp3')
+};
+
+sfx.bg.loop = true;
+sfx.bg.volume = 0.5;
+sfx.boost.volume = 0.7;
+
+function playSfx(key) {
+    if (sfx[key]) {
+        sfx[key].currentTime = 0;
+        sfx[key].play().catch(() => {});
+    }
+}
+
+/**
+ * GAME CORE
+ */
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const menu = document.getElementById("menu");
+const startBtn = document.getElementById("startBtn");
+const hudScore = document.getElementById("hudScore");
+const levelTag = document.getElementById("level-tag");
+
+let gameActive = false;
+let score = 0;
+let level = 1;
+let gameOver = false;
+let roadSpeed = 6;
+let frame = 0;
+let screenShake = 0;
+
+let player = { x: 180, y: 520, w: 42, h: 75 };
+let enemyCars = [];
+let coins = [];
+let particles = [];
+let powerUps = [];
+let rain = [];
+
+let turbo = { level: 100, active: false, wasActive: false };
+let shield = { active: false, time: 0 };
+let keys = {};
+
+/**
+ * INPUT HANDLING (PC + MOBILE)
+ */
+window.addEventListener("keydown", e => {
+    keys[e.code] = true;
+    if (gameOver && e.code === "Enter") resetGame();
+});
+window.addEventListener("keyup", e => keys[e.code] = false);
+
+// Touch Handling
+canvas.addEventListener("touchstart", handleTouch, {passive: false});
+canvas.addEventListener("touchend", handleTouch, {passive: false});
+canvas.addEventListener("touchmove", e => e.preventDefault(), {passive: false});
+
+function handleTouch(e) {
+    if(!gameActive) return;
+    if(gameOver) {
+        resetGame();
+        return;
+    }
+    e.preventDefault();
+    const touches = e.touches;
+    
+    // Reset virtual keys
+    keys["ArrowLeft"] = false;
+    keys["ArrowRight"] = false;
+    keys["Space"] = touches.length >= 2;
+
+    for (let i = 0; i < touches.length; i++) {
+        const touchX = touches[i].clientX - canvas.getBoundingClientRect().left;
+        const ratioX = touchX / canvas.clientWidth;
+        
+        if (ratioX < 0.5) keys["ArrowLeft"] = true;
+        else keys["ArrowRight"] = true;
+    }
+}
+
+startBtn.onclick = () => {
+    gameActive = true;
+    menu.style.display = "none";
+    hudScore.style.display = "block";
+    levelTag.style.display = "block";
+    sfx.bg.play().catch(() => console.log("Interaction required"));
+    resetGame();
+};
+
+function collide(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+function spawnParticle(x, y, color, amt = 5) {
+    for (let i = 0; i < amt; i++) {
+        particles.push({
+            x, y, 
+            vx: (Math.random() - 0.5) * 6, 
+            vy: (Math.random() - 0.5) * 6, 
+            life: 1.0, 
+            color 
+        });
+    }
+}
+
+function drawWorld() {
+    ctx.fillStyle = "#020202";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    if (frame % 2 === 0) rain.push({x: Math.random()*canvas.width, y: -10, l: Math.random()*20});
+    ctx.strokeStyle = "rgba(0, 247, 255, 0.1)";
+    ctx.lineWidth = 1;
+    rain.forEach((r, i) => {
+        r.y += 15;
+        ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x, r.y + r.l); ctx.stroke();
+        if(r.y > canvas.height) rain.splice(i, 1);
+    });
+
+    ctx.fillStyle = "#080808";
+    ctx.fillRect(50, 0, canvas.width - 100, canvas.height);
+    
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = level % 2 === 0 ? "#ff007a" : "#00f7ff";
+    ctx.fillStyle = ctx.shadowColor;
+    ctx.fillRect(45, 0, 5, canvas.height);
+    ctx.fillRect(canvas.width - 50, 0, 5, canvas.height);
+    ctx.shadowBlur = 0;
+
+    ctx.setLineDash([40, 40]);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.lineWidth = 3;
+    ctx.lineDashOffset = -frame * roadSpeed;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width/2, 0); ctx.lineTo(canvas.width/2, canvas.height);
+    ctx.stroke();
+    ctx.setLineDash([]);
+}
+
+function varColor(name) {
+    const colors = {
+        '--neon': '#00f7ff',
+        '--pink': '#ff007a',
+        '--shield': '#7cfc00',
+        '--nitro': '#bc13fe'
+    };
+    return colors[name] || '#ffffff';
+}
+
+function drawPlayer() {
+    if (turbo.active) {
+        spawnParticle(player.x + 10, player.y + 75, varColor('--neon'), 2);
+        spawnParticle(player.x + 32, player.y + 75, varColor('--pink'), 2);
+    }
+
+    ctx.shadowBlur = shield.active ? 30 : 20;
+    ctx.shadowColor = shield.active ? varColor('--shield') : varColor('--neon');
+    
+    ctx.fillStyle = "#111";
+    ctx.fillRect(player.x, player.y, player.w, player.h);
+    ctx.strokeStyle = ctx.shadowColor;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(player.x, player.y, player.w, player.h);
+    
+    ctx.fillStyle = turbo.active ? "white" : varColor('--neon');
+    ctx.fillRect(player.x + 8, player.y + 15, 26, 20);
+    ctx.shadowBlur = 0;
+}
+
+function update() {
+    if (!gameActive) return;
+
+    if (gameOver) {
+        sfx.bg.pause();
+        ctx.fillStyle = "rgba(0,0,0,0.85)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.textAlign = "center";
+        ctx.fillStyle = varColor('--pink');
+        ctx.font = "bold 24px Orbitron";
+        ctx.fillText("CRITICAL FAILURE", canvas.width/2, 300);
+        ctx.fillStyle = "white";
+        ctx.font = "14px Orbitron";
+        ctx.fillText("DISTANCE: " + Math.floor(score) + "m", canvas.width/2, 340);
+        ctx.fillText("TAP OR PRESS ENTER TO REBOOT", canvas.width/2, 400);
+        requestAnimationFrame(update);
+        return;
+    }
+
+    frame++;
+    score += turbo.active ? 0.6 : 0.15;
+    level = 1 + Math.floor(score / 500);
+    levelTag.innerText = `LEVEL ${level}`;
+    roadSpeed = 7 + (level * 0.5);
+
+    if (keys["Space"] && turbo.level > 0) {
+        if (!turbo.active) playSfx('boost');
+        turbo.active = true;
+        turbo.level -= 1.2;
+        roadSpeed *= 1.8;
+        screenShake = 3;
+    } else {
+        turbo.active = false;
+        if (turbo.level < 100) turbo.level += 0.3;
+    }
+
+    if (screenShake > 0) {
+        ctx.save();
+        ctx.translate((Math.random()-0.5)*screenShake, (Math.random()-0.5)*screenShake);
+        screenShake *= 0.9;
+    }
+
+    drawWorld();
+    
+    if (keys["ArrowLeft"] && player.x > 55) player.x -= 8;
+    if (keys["ArrowRight"] && player.x < canvas.width - 97) player.x += 8;
+    
+    drawPlayer();
+
+    const spawnRate = Math.max(12, 45 - (level * 3));
+    if (frame % spawnRate === 0) {
+        enemyCars.push({
+            x: 60 + Math.random() * (canvas.width - 150),
+            y: -100, w: 40, h: 75,
+            color: Math.random() > 0.5 ? varColor('--pink') : "#bc00ff"
+        });
+    }
+
+    enemyCars.forEach((car, i) => {
+        car.y += roadSpeed * 0.9;
+        ctx.fillStyle = car.color;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = car.color;
+        ctx.fillRect(car.x, car.y, car.w, car.h);
+        ctx.shadowBlur = 0;
+
+        if (collide(player, car)) {
+            if (shield.active) {
+                enemyCars.splice(i, 1);
+                spawnParticle(car.x, car.y, varColor('--shield'), 20);
+                shield.active = false;
+                playSfx('accident');
+                screenShake = 15;
+            } else {
+                gameOver = true;
+                playSfx('accident');
+                playSfx('lose');
+                spawnParticle(player.x, player.y, "white", 40);
+                screenShake = 30;
+            }
+        }
+        if (car.y > canvas.height) enemyCars.splice(i, 1);
+    });
+
+    if (frame % 120 === 0) {
+        const type = Math.random() > 0.8 ? 'nitro' : 'coin';
+        coins.push({ 
+            x: 60 + Math.random() * (canvas.width - 150), 
+            y: -50, w: 22, h: 22, type: type 
+        });
+    }
+
+    coins.forEach((c, i) => {
+        c.y += roadSpeed;
+        if(c.type === 'coin') {
+            ctx.fillStyle = "#FFD700";
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "#FFD700";
+            ctx.beginPath(); ctx.arc(c.x + 11, c.y + 11, 11, 0, Math.PI * 2); ctx.fill();
+        } else {
+            ctx.fillStyle = varColor('--nitro');
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = varColor('--nitro');
+            ctx.fillRect(c.x, c.y, 22, 22);
+        }
+        ctx.shadowBlur = 0;
+
+        if (collide(player, c)) {
+            if(c.type === 'coin') {
+                score += 50;
+                spawnParticle(c.x, c.y, "#FFD700", 10);
+            } else {
+                turbo.level = 100;
+                playSfx('boost');
+                spawnParticle(c.x, c.y, varColor('--nitro'), 15);
+            }
+            coins.splice(i, 1);
+        }
+    });
+
+    if (frame % 800 === 0) powerUps.push({ x: 100 + Math.random() * 200, y: -50, w: 30, h: 30 });
+    powerUps.forEach((p, i) => {
+        p.y += roadSpeed;
+        ctx.fillStyle = varColor('--shield');
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = varColor('--shield');
+        ctx.beginPath(); ctx.arc(p.x + 15, p.y + 15, 15, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+        if (collide(player, p)) {
+            shield.active = true;
+            powerUps.splice(i, 1);
+            playSfx('win');
+        }
+    });
+
+    particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy;
+        p.life -= 0.02;
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life;
+        ctx.fillRect(p.x, p.y, 3, 3);
+        ctx.globalAlpha = 1;
+        if (p.life <= 0) particles.splice(i, 1);
+    });
+
+    hudScore.innerText = `SCORE: ${Math.floor(score)}`;
+    ctx.fillStyle = "rgba(255,255,255,0.1)";
+    ctx.fillRect(20, 630, 360, 8);
+    let grad = ctx.createLinearGradient(20, 0, 380, 0);
+    grad.addColorStop(0, varColor('--pink'));
+    grad.addColorStop(1, varColor('--neon'));
+    ctx.fillStyle = grad;
+    ctx.fillRect(20, 630, (turbo.level/100) * 360, 8);
+
+    if (screenShake > 0) ctx.restore();
+    requestAnimationFrame(update);
+}
+
+function resetGame() {
+    score = 0; level = 1; gameOver = false;
+    enemyCars = []; coins = []; particles = []; powerUps = []; rain = [];
+    turbo.level = 100; shield.active = false;
+    player.x = 180;
+    if (sfx.bg.paused) sfx.bg.play().catch(() => {});
+    update();
+}
+</script>
+</body>
+</html>

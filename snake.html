@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cyber Serpent Pro: Ultimate</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --neon-cyan: #00f7ff;
+      --neon-pink: #ff007a;
+      --neon-gold: #ffcc00;
+      --bg-dark: #020205;
+    }
+
+    body {
+      margin: 0; background: var(--bg-dark); color: white;
+      font-family: 'Orbitron', sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; overflow: hidden; touch-action: none;
+    }
+
+    #game-wrapper {
+      position: relative; padding: 15px;
+      border: 2px solid rgba(0, 247, 255, 0.3);
+      border-radius: 20px; background: rgba(0,0,0,0.85);
+      box-shadow: 0 0 50px rgba(0, 247, 255, 0.1);
+      max-width: 95vw;
+    }
+
+    canvas { 
+      display: block; background: #000; border-radius: 12px; 
+      box-shadow: inset 0 0 20px #000; 
+      width: 320px; height: 320px; /* Scale for mobile */
+    }
+
+    @media (min-width: 600px) {
+      canvas { width: 400px; height: 400px; }
+    }
+
+    .ui-layer {
+      display: flex; justify-content: space-between; width: 100%;
+      margin-bottom: 12px; font-size: 0.75rem;
+    }
+
+    /* Mobile D-Pad */
+    #controls {
+      display: grid;
+      grid-template-areas: 
+        ". up ."
+        "left . right"
+        ". down .";
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    @media (min-width: 1024px) {
+      #controls { display: none; } /* Hide on PC */
+    }
+
+    .control-btn {
+      width: 60px; height: 60px;
+      background: rgba(0, 247, 255, 0.1);
+      border: 1px solid var(--neon-cyan);
+      color: var(--neon-cyan);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      user-select: none;
+    }
+
+    /* Overlays */
+    #overlay, #store-screen {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.95);
+      display: none; flex-direction: column; align-items: center;
+      justify-content: center; border-radius: 20px; z-index: 100;
+      padding: 20px; text-align: center; backdrop-filter: blur(10px);
+    }
+
+    .skin-card {
+      background: rgba(255,255,255,0.05); border: 1px solid #333;
+      padding: 12px; margin: 8px; border-radius: 10px; width: 85%;
+    }
+
+    .btn-group { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; justify-content: center; }
+
+    button {
+      background: rgba(0, 247, 255, 0.05); border: 1px solid var(--neon-cyan);
+      color: var(--neon-cyan); padding: 10px 18px; border-radius: 5px;
+      cursor: pointer; font-family: 'Orbitron'; font-size: 0.65rem;
+      transition: 0.2s; text-transform: uppercase;
+    }
+
+    button:hover:not(:disabled) { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px var(--neon-cyan); }
+    button:disabled { border-color: #444; color: #444; cursor: not-allowed; }
+
+    .stat-label { color: #555; font-size: 0.55rem; display: block; }
+  </style>
+</head>
+<body>
+
+  <div id="game-wrapper">
+    <div class="ui-layer">
+      <div><span class="stat-label">SCORE</span><span id="snakeScore" style="color:var(--neon-cyan)">0</span></div>
+      <div><span class="stat-label">COINS</span>💰 <span id="wallet" style="color:var(--neon-gold)">0</span></div>
+      <div><span class="stat-label">HIGH</span><span id="highScore">0</span></div>
+    </div>
+
+    <canvas id="snakeCanvas" width="400" height="400"></canvas>
+
+    <div id="controls">
+      <div class="control-btn" style="grid-area: up" onclick="setDir('UP')">▲</div>
+      <div class="control-btn" style="grid-area: left" onclick="setDir('LEFT')">◀</div>
+      <div class="control-btn" style="grid-area: right" onclick="setDir('RIGHT')">▶</div>
+      <div class="control-btn" style="grid-area: down" onclick="setDir('DOWN')">▼</div>
+    </div>
+
+    <div id="overlay">
+      <h2 style="color:var(--neon-pink); margin:0;">SYSTEM CRASH</h2>
+      <p id="finalStat" style="font-size: 0.8rem; margin: 15px 0;"></p>
+      <div class="btn-group">
+        <button onclick="initGame()">REBOOT</button>
+        <button onclick="openStore()">STORE</button>
+      </div>
+    </div>
+
+    <div id="store-screen">
+      <h2 style="color:var(--neon-gold); margin-top:0;">CYBER STORE</h2>
+      <p style="font-size: 0.8rem;">BALANCE: 💰 <span id="storeWallet">0</span></p>
+      
+      <div class="skin-card">
+        <div style="color:var(--neon-cyan); font-size: 0.9rem;">PHANTOM</div>
+        <div style="font-size:0.55rem; margin:4px 0; color: #aaa;">POWER: GHOST (PASS THROUGH SELF)</div>
+        <button id="buySkin1" onclick="buySkin(1, 200)">BUY: 200</button>
+      </div>
+
+      <div class="skin-card">
+        <div style="color:var(--neon-pink); font-size: 0.9rem;">TITAN</div>
+        <div style="font-size:0.55rem; margin:4px 0; color: #aaa;">POWER: HEAVY (SLOW + 2X COINS)</div>
+        <button id="buySkin2" onclick="buySkin(2, 500)">BUY: 500</button>
+      </div>
+
+      <button onclick="closeStore()" style="margin-top:10px; border-color:white; color:white;">EXIT STORE</button>
+    </div>
+
+    <div class="btn-group">
+      <button onclick="togglePause()">⏸ PAUSE</button>
+      <button onclick="toggleMute()" id="muteBtn">🔊 SOUND: ON</button>
+      <button onclick="switchTheme()">🎨 THEME</button>
+    </div>
+  </div>
+
+<script>
+/** AUDIO & DATA **/
+const popSnd = new Audio('sounds/pop.mp3');
+const loseSnd = new Audio('sounds/lose.mp3');
+const bgMusic = new Audio('sounds/snake.mp3');
+bgMusic.loop = true;
+
+let isMuted = false;
+let coins = parseInt(localStorage.getItem("cyberCoins")) || 0;
+let ownedSkins = JSON.parse(localStorage.getItem("ownedSkins")) || [0];
+let activeSkin = parseInt(localStorage.getItem("activeSkin")) || 0;
+let highScore = localStorage.getItem("snakeHighScorePro") || 0;
+
+/** GAME CONFIG **/
+const canvas = document.getElementById("snakeCanvas");
+const ctx = canvas.getContext("2d");
+const box = 20;
+
+let snake, food, score, direction, gameLoop, paused, gameSpeed, themeIndex = 0;
+
+const themes = [
+  { name: "NEON", bg: "#020205", grid: "rgba(0, 247, 255, 0.05)", food: "#ff007a" },
+  { name: "MATRIX", bg: "#000d00", grid: "rgba(0, 255, 0, 0.05)", food: "#00ff00" }
+];
+
+const skins = [
+  { id: 0, color: "#00f7ff", body: "#004444", power: "none" },
+  { id: 1, color: "#ffffff", body: "rgba(255,255,255,0.3)", power: "ghost" },
+  { id: 2, color: "#ff007a", body: "#440022", power: "heavy" }
+];
+
+function initGame() {
+  snake = [{x: 9*box, y: 10*box}, {x: 8*box, y: 10*box}];
+  direction = "RIGHT";
+  score = 0;
+  paused = false;
+  
+  const skin = skins[activeSkin];
+  gameSpeed = (skin.power === "heavy") ? 160 : 120; 
+
+  document.getElementById("overlay").style.display = "none";
+  document.getElementById("highScore").innerText = highScore;
+  
+  if(!isMuted) bgMusic.play().catch(()=>{});
+
+  spawnFood();
+  
+  if(gameLoop) clearInterval(gameLoop);
+  gameLoop = setInterval(update, gameSpeed);
+}
+
+function spawnFood() {
+  food = { x: Math.floor(Math.random()*19)*box, y: Math.floor(Math.random()*19)*box };
+}
+
+function update() {
+  if (paused) return;
+
+  const head = {...snake[0]};
+  if (direction === "UP") head.y -= box;
+  if (direction === "DOWN") head.y += box;
+  if (direction === "LEFT") head.x -= box;
+  if (direction === "RIGHT") head.x += box;
+
+  if (head.x < 0 || head.y < 0 || head.x >= canvas.width || head.y >= canvas.height) return endGame();
+  if (skins[activeSkin].power !== "ghost") {
+    if (snake.some(s => s.x === head.x && s.y === head.y)) return endGame();
+  }
+
+  if (head.x === food.x && head.y === food.y) {
+    score++;
+    let earn = (skins[activeSkin].power === "heavy") ? 20 : 10;
+    coins += earn;
+    localStorage.setItem("cyberCoins", coins);
+    if(!isMuted) { popSnd.currentTime = 0; popSnd.play().catch(()=>{}); }
+    spawnFood();
+  } else {
+    snake.pop();
+  }
+
+  snake.unshift(head);
+  draw();
+}
+
+function draw() {
+  const t = themes[themeIndex];
+  const s = skins[activeSkin];
+
+  ctx.fillStyle = t.bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.strokeStyle = t.grid;
+  for(let i=0; i<canvas.width; i+=box) {
+    ctx.strokeRect(i, 0, 1, canvas.height);
+    ctx.strokeRect(0, i, canvas.width, 1);
+  }
+
+  ctx.fillStyle = t.food;
+  ctx.shadowBlur = 15; ctx.shadowColor = t.food;
+  ctx.fillRect(food.x+2, food.y+2, box-4, box-4);
+
+  snake.forEach((part, i) => {
+    ctx.fillStyle = i === 0 ? s.color : s.body;
+    ctx.shadowBlur = i === 0 ? 10 : 0;
+    ctx.shadowColor = s.color;
+    ctx.fillRect(part.x+1, part.y+1, box-2, box-2);
+  });
+  ctx.shadowBlur = 0;
+
+  document.getElementById("snakeScore").innerText = score;
+  document.getElementById("wallet").innerText = coins;
+}
+
+function endGame() {
+  clearInterval(gameLoop);
+  if(!isMuted) loseSnd.play().catch(()=>{});
+  if(score > highScore) {
+    highScore = score;
+    localStorage.setItem("snakeHighScorePro", highScore);
+  }
+  document.getElementById("finalStat").innerText = `FINAL SCORE: ${score} | TOTAL COINS: 💰 ${coins}`;
+  document.getElementById("overlay").style.display = "flex";
+}
+
+/** UI FUNCTIONS **/
+window.togglePause = () => { 
+  paused = !paused; 
+  if(paused) bgMusic.pause();
+  else if(!isMuted) bgMusic.play().catch(()=>{});
+};
+
+window.toggleMute = () => {
+  isMuted = !isMuted;
+  document.getElementById("muteBtn").innerText = isMuted ? "🔇 SOUND: OFF" : "🔊 SOUND: ON";
+  if(isMuted) bgMusic.pause();
+  else bgMusic.play().catch(()=>{});
+};
+window.switchTheme = () => { themeIndex = (themeIndex + 1) % themes.length; draw(); };
+
+window.openStore = () => {
+  document.getElementById("store-screen").style.display = "flex";
+  document.getElementById("storeWallet").innerText = coins;
+  updateStoreButtons();
+};
+
+window.closeStore = () => { document.getElementById("store-screen").style.display = "none"; };
+
+function updateStoreButtons() {
+  [1, 2].forEach(id => {
+    const btn = document.getElementById(`buySkin${id}`);
+    const price = (id === 1) ? 200 : 500;
+    
+    if (ownedSkins.includes(id)) {
+      btn.innerText = (activeSkin === id) ? "EQUIPPED" : "EQUIP";
+      btn.disabled = (activeSkin === id);
+      btn.onclick = () => { activeSkin = id; localStorage.setItem("activeSkin", id); updateStoreButtons(); };
+    } else {
+      btn.innerText = `BUY: ${price}`;
+      btn.disabled = (coins < price);
+      btn.onclick = () => buySkin(id, price);
+    }
+  });
+}
+
+function buySkin(id, price) {
+  if (coins >= price) {
+    coins -= price;
+    ownedSkins.push(id);
+    localStorage.setItem("cyberCoins", coins);
+    localStorage.setItem("ownedSkins", JSON.stringify(ownedSkins));
+    activeSkin = id;
+    localStorage.setItem("activeSkin", id);
+    updateStoreButtons();
+    document.getElementById("storeWallet").innerText = coins;
+  }
+}
+
+/** CONTROLS ENGINE **/
+function setDir(newDir) {
+  if (newDir === "UP" && direction !== "DOWN") direction = "UP";
+  if (newDir === "DOWN" && direction !== "UP") direction = "DOWN";
+  if (newDir === "LEFT" && direction !== "RIGHT") direction = "LEFT";
+  if (newDir === "RIGHT" && direction !== "LEFT") direction = "RIGHT";
+}
+
+// PC Keyboard
+document.addEventListener("keydown", e => {
+  const k = e.key;
+  if (k === "ArrowUp") setDir("UP");
+  if (k === "ArrowDown") setDir("DOWN");
+  if (k === "ArrowLeft") setDir("LEFT");
+  if (k === "ArrowRight") setDir("RIGHT");
+});
+
+// Mobile Swipe
+let touchStartX = 0;
+let touchStartY = 0;
+
+canvas.addEventListener("touchstart", e => {
+  touchStartX = e.changedTouches[0].screenX;
+  touchStartY = e.changedTouches[0].screenY;
+}, false);
+
+canvas.addEventListener("touchend", e => {
+  let x = e.changedTouches[0].screenX;
+  let y = e.changedTouches[0].screenY;
+  
+  let dx = x - touchStartX;
+  let dy = y - touchStartY;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    if (dx > 30) setDir("RIGHT");
+    else if (dx < -30) setDir("LEFT");
+  } else {
+    if (dy > 30) setDir("DOWN");
+    else if (dy < -30) setDir("UP");
+  }
+}, false);
+
+initGame();
+</script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RPS Pro - Sound Integrated</title>
+  <style>
+    :root {
+      --accent-blue: #00f7ff;
+      --accent-pink: #ff007a;
+      --bg-dark: #0f172a;
+      --glass: rgba(255, 255, 255, 0.05);
+    }
+
+    body {
+      background: var(--bg-dark);
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .game-card {
+      background: rgba(15, 23, 42, 0.9);
+      padding: 40px;
+      border-radius: 30px;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+      width: 400px;
+      text-align: center;
+    }
+
+    /* Health Bars */
+    .stats { display: flex; justify-content: space-between; margin-bottom: 25px; }
+    .bar-container { width: 45%; }
+    .label { font-size: 0.7rem; letter-spacing: 2px; color: #64748b; margin-bottom: 5px; display: block; }
+    .bar { height: 8px; background: #1e293b; border-radius: 10px; overflow: hidden; }
+    .fill { height: 100%; width: 0%; transition: 0.4s ease; }
+    #userFill { background: var(--accent-blue); box-shadow: 0 0 10px var(--accent-blue); }
+    #compFill { background: var(--accent-pink); box-shadow: 0 0 10px var(--accent-pink); }
+
+    /* Battle Zone */
+    .arena {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: rgba(0,0,0,0.3);
+      padding: 30px;
+      border-radius: 20px;
+      margin-bottom: 25px;
+    }
+    .hand { font-size: 4rem; transition: 0.2s; }
+    
+    /* Shake Animation */
+    .animating { animation: shake 0.2s ease infinite; }
+    @keyframes shake {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    .choices { display: flex; justify-content: center; gap: 15px; }
+    .choice-btn {
+      background: var(--glass);
+      border: 1px solid rgba(255,255,255,0.1);
+      font-size: 2.5rem;
+      padding: 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .choice-btn:hover { border-color: var(--accent-blue); transform: translateY(-5px); }
+
+    #msg { font-weight: bold; margin-top: 20px; min-height: 1.5em; letter-spacing: 1px; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+
+  <div class="game-card">
+    <div class="stats">
+      <div class="bar-container">
+        <span class="label">PLAYER</span>
+        <div class="bar"><div id="userFill" class="fill"></div></div>
+      </div>
+      <div class="bar-container">
+        <span class="label">COMPUTER</span>
+        <div class="bar"><div id="compFill" class="fill"></div></div>
+      </div>
+    </div>
+
+    <div class="arena">
+      <div id="uHand" class="hand">✊</div>
+      <div style="color: #334155; font-weight: bold;">VS</div>
+      <div id="cHand" class="hand">✊</div>
+    </div>
+
+    <p id="msg">Choose Your Weapon</p>
+
+    <div class="choices">
+      <button class="choice-btn" onclick="play('rock')">✊</button>
+      <button class="choice-btn" onclick="play('paper')">✋</button>
+      <button class="choice-btn" onclick="play('scissors')">✌️</button>
+    </div>
+
+    <button onclick="resetMatch()" style="margin-top:25px; background:none; border:none; color:#475569; cursor:pointer; font-size: 0.8rem; text-decoration: underline;">🔄 Reset Match</button>
+  </div>
+
+  <script>
+    const winAudio = new Audio('sounds/win.mp3');
+    const loseAudio = new Audio('sounds/lose.mp3');
+
+    function playSound(type) {
+      if (type === 'win') {
+        winAudio.currentTime = 0;
+        winAudio.play().catch(e => console.log("Audio play blocked until user interaction."));
+      } else if (type === 'lose') {
+        loseAudio.currentTime = 0;
+        loseAudio.play().catch(e => console.log("Audio play blocked until user interaction."));
+      }
+    }
+  </script>
+
+  <script>
+    let uScore = 0;
+    let cScore = 0;
+    const goal = 5;
+    let locked = false;
+
+    function play(choice) {
+      if (locked || uScore >= goal || cScore >= goal) return;
+      locked = true;
+
+      const items = ['rock', 'paper', 'scissors'];
+      const cpu = items[Math.floor(Math.random() * 3)];
+      const emojis = { rock: "✊", paper: "✋", scissors: "✌️" };
+
+      const uEl = document.getElementById('uHand');
+      const cEl = document.getElementById('cHand');
+      const msg = document.getElementById('msg');
+
+      // Start Shake
+      uEl.innerText = "✊";
+      cEl.innerText = "✊";
+      uEl.classList.add('animating');
+      cEl.classList.add('animating');
+      msg.innerText = "Battle...";
+
+      setTimeout(() => {
+        uEl.classList.remove('animating');
+        cEl.classList.remove('animating');
+        uEl.innerText = emojis[choice];
+        cEl.innerText = emojis[cpu];
+
+        if (choice === cpu) {
+          msg.innerText = "DRAW! 🤝";
+          msg.style.color = "white";
+          // No sound plays here as requested
+        } 
+        else if (
+          (choice === 'rock' && cpu === 'scissors') ||
+          (choice === 'paper' && cpu === 'rock') ||
+          (choice === 'scissors' && cpu === 'paper')
+        ) {
+          uScore++;
+          msg.innerText = "POINT FOR YOU! 🔥";
+          msg.style.color = "var(--accent-blue)";
+          playSound('win');
+        } 
+        else {
+          cScore++;
+          msg.innerText = "CPU SCORED! 💀";
+          msg.style.color = "var(--accent-pink)";
+          playSound('lose');
+        }
+
+        // Update Progress Bars
+        document.getElementById('userFill').style.width = (uScore / goal * 100) + "%";
+        document.getElementById('compFill').style.width = (cScore / goal * 100) + "%";
+
+        // Check Winner
+        if (uScore === goal) msg.innerText = "🏆 MATCH CHAMPION!";
+        else if (cScore === goal) msg.innerText = "💀 CPU DOMINATION!";
+
+        locked = false;
+      }, 700);
+    }
+
+    function resetMatch() {
+      uScore = 0; cScore = 0; locked = false;
+      document.getElementById('userFill').style.width = "0%";
+      document.getElementById('compFill').style.width = "0%";
+      document.getElementById('uHand').innerText = "✊";
+      document.getElementById('cHand').innerText = "✊";
+      document.getElementById('msg').innerText = "Choose Your Weapon";
+      document.getElementById('msg').style.color = "white";
+    }
+  </script>
+</body>
+</html>
