@@ -4,11 +4,6 @@
 <title>Qazi Games</title>
 
 <link rel="stylesheet" href="style.css">
-
-<!-- (Optional) Ad script can stay in head -->
-<script async="async" data-cfasync="false" 
-src="https://pl29529472.effectivecpmnetwork.com/70a5fb5b9a749f9711fccd87e653c11f/invoke.js"></script>
-
 </head>
 
 <body>
@@ -31,8 +26,22 @@ src="https://pl29529472.effectivecpmnetwork.com/70a5fb5b9a749f9711fccd87e653c11f
 </nav>
 </header>
 
-<!-- 🔥 AD CONTAINER (IMPORTANT PLACE) -->
-<div id="container-70a5fb5b9a749f9711fccd87e653c11f"></div>
+<!-- ========================= -->
+<!-- 🔥 AD 1: TOP BANNER -->
+<!-- ========================= -->
+<div class="ad-top" style="margin:10px 0;">
+  <div id="container-70a5fb5b9a749f9711fccd87e653c11f"></div>
+</div>
+
+<script>
+window.addEventListener("load", function () {
+  var script = document.createElement("script");
+  script.async = true;
+  script.setAttribute("data-cfasync", "false");
+  script.src = "https://pl29529472.effectivecpmnetwork.com/70a5fb5b9a749f9711fccd87e653c11f/invoke.js";
+  document.body.appendChild(script);
+});
+</script>
 
 <main>
 
@@ -41,6 +50,14 @@ src="https://pl29529472.effectivecpmnetwork.com/70a5fb5b9a749f9711fccd87e653c11f
 Qazi Games is a free online gaming website where you can play fun games instantly without download.
 </p>
 
+<!-- ========================= -->
+<!-- 🔥 AD 2: MID CONTENT -->
+<!-- ========================= -->
+<div class="ad-mid" style="margin:15px 0;">
+  <script src="https://pl29643779.effectivecpmnetwork.com/0f/ff/3d/0fff3d9c24531b389bd350b97b1a7d0e.js"></script>
+</div>
+
+<!-- SLIDER -->
 <div class="slider">
   <div class="slides">
     <div class="slide" onclick="go('shooting.html')">🚀 Space Shooter</div>
@@ -54,6 +71,7 @@ Qazi Games is a free online gaming website where you can play fun games instantl
 <h2>🔥 Play Games Instantly</h2>
 
 <div class="games-container">
+
   <div class="game-card" onclick="go('rps.html')"><h3>✊ RPS</h3></div>
   <div class="game-card" onclick="go('tictactoe.html')"><h3>❌⭕ TicTacToe</h3></div>
   <div class="game-card" onclick="go('numbergame.html')"><h3>🔢 Number</h3></div>
@@ -71,19 +89,32 @@ We are constantly adding new games to Qazi Games. Stay connected and enjoy unlim
 
 </main>
 
-<!-- 🔥 SECOND AD NETWORK SCRIPT (PUT HERE AT END OF BODY) -->
-<script src="https://pl29643779.effectivecpmnetwork.com/0f/ff/3d/0fff3d9c24531b389bd350b97b1a7d0e.js"></script>
+<!-- ========================= -->
+<!-- 🔥 AD 3: BOTTOM STICKY -->
+<!-- ========================= -->
+<div class="ad-bottom">
+  <script src="https://pl29643779.effectivecpmnetwork.com/0f/ff/3d/0fff3d9c24531b389bd350b97b1a7d0e.js"></script>
+</div>
 
+<!-- ========================= -->
+<!-- JS -->
+<!-- ========================= -->
 <script>
-// NAVIGATION
+// NAVIGATION (IMPORTANT: add ad click behavior here if needed)
 function go(page){
+
   let user = localStorage.getItem("currentUser");
 
   if(!user){
     localStorage.setItem("redirectGame", page);
     window.location.href = "signup.html";
   } else {
-    window.location.href = page;
+
+    // optional: small delay helps ads register clicks
+    setTimeout(() => {
+      window.location.href = page;
+    }, 300);
+
   }
 }
 
