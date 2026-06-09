@@ -3,12 +3,12 @@
 <head>
 <title>Qazi Games</title>
 
-<!-- ✅ Google AdSense -->
-<script async="async" data-cfasync="false" src="https://pl29529472.effectivecpmnetwork.com/70a5fb5b9a749f9711fccd87e653c11f/invoke.js"></script>
-<div id="container-70a5fb5b9a749f9711fccd87e653c11f"></div>
-
-
 <link rel="stylesheet" href="style.css">
+
+<!-- (Optional) Ad script can stay in head -->
+<script async="async" data-cfasync="false" 
+src="https://pl29529472.effectivecpmnetwork.com/70a5fb5b9a749f9711fccd87e653c11f/invoke.js"></script>
+
 </head>
 
 <body>
@@ -31,29 +31,29 @@
 </nav>
 </header>
 
+<!-- 🔥 AD CONTAINER (IMPORTANT PLACE) -->
+<div id="container-70a5fb5b9a749f9711fccd87e653c11f"></div>
+
 <main>
 
-<!-- ✅ ADDED TEXT -->
 <h2>Welcome to Qazi Games</h2>
 <p>
-Qazi Games is a free online gaming website where you can play fun and simple games like Snake, Tic Tac Toe, Racing, and more. 
-No downloads required — just click and play instantly!
+Qazi Games is a free online gaming website where you can play fun games instantly without download.
 </p>
 
-<!-- 🔥 SLIDER -->
 <div class="slider">
   <div class="slides">
     <div class="slide" onclick="go('shooting.html')">🚀 Space Shooter</div>
     <div class="slide" onclick="go('snake.html')">🐍 Snake Game</div>
     <div class="slide" onclick="go('flappy.html')">🐦 Flappy Game</div>
     <div class="slide" onclick="go('neonCarRacingTurbo.html')">🚗 Neon Racing</div>
+    <div class="slide" onclick="go('Hangman.html')">Hang man</div>
   </div>
 </div>
 
 <h2>🔥 Play Games Instantly</h2>
 
 <div class="games-container">
-
   <div class="game-card" onclick="go('rps.html')"><h3>✊ RPS</h3></div>
   <div class="game-card" onclick="go('tictactoe.html')"><h3>❌⭕ TicTacToe</h3></div>
   <div class="game-card" onclick="go('numbergame.html')"><h3>🔢 Number</h3></div>
@@ -62,18 +62,20 @@ No downloads required — just click and play instantly!
   <div class="game-card" onclick="go('memory.html')"><h3>🧠 Memory</h3></div>
   <div class="game-card" onclick="go('shooting.html')"><h3>🚀 Shooting</h3></div>
   <div class="game-card" onclick="go('neonCarRacingTurbo.html')"><h3>🚗 Racing</h3></div>
-
+  <div class="game-card" onclick="go('Hangman.html')"><h3>Hangman</h3></div>  
 </div>
 
-<!-- ✅ EXTRA TEXT (helps approval) -->
 <p>
-We are constantly adding new games to Qazi Games. Stay connected and enjoy unlimited fun anytime, anywhere.
+We are constantly adding new games to Qazi Games. Stay connected and enjoy unlimited fun anytime.
 </p>
 
 </main>
 
+<!-- 🔥 SECOND AD NETWORK SCRIPT (PUT HERE AT END OF BODY) -->
+<script src="https://pl29643779.effectivecpmnetwork.com/0f/ff/3d/0fff3d9c24531b389bd350b97b1a7d0e.js"></script>
+
 <script>
-// 🎮 NAVIGATION
+// NAVIGATION
 function go(page){
   let user = localStorage.getItem("currentUser");
 
@@ -85,14 +87,14 @@ function go(page){
   }
 }
 
-// 🔓 LOGOUT
+// LOGOUT
 function logout(){
   localStorage.removeItem("currentUser");
   alert("Logged out!");
   window.location.href = "index.html";
 }
 
-// 👤 SHOW USERNAME
+// SHOW USER
 let user = JSON.parse(localStorage.getItem("currentUser"));
 if(user){
   document.getElementById("userNameDisplay").innerText = "👤 " + user.username;
