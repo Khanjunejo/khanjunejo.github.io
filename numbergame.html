@@ -3,258 +3,737 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Number Guess Pro — A fun number guessing game. Beat the clock, earn points, and level up!">
 <title>Number Guess Pro</title>
 
+<!-- ✅ PASTE YOUR GOOGLE ADSENSE SCRIPT HERE -->
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 :root {
-    --bg: #0f172a;
-    --card: #1e293b;
-    --primary: #38bdf8;
-    --accent: #fbbf24;
-    --danger: #ef4444;
+  --bg: #0f0e1a;
+  --card: #1a1830;
+  --surface: #232140;
+  --primary: #38bdf8;
+  --accent: #fbbf24;
+  --success: #4ade80;
+  --danger: #f87171;
+  --text: #e2e0f0;
+  --muted: #6b6880;
+  --border: rgba(255,255,255,0.07);
+  --radius: 18px;
 }
 
 body {
-    background: var(--bg);
-    color: white;
-    font-family: sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Grotesk', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px 16px 40px;
 }
 
-.game-box {
-    background: var(--card);
-    padding: 20px;
-    border-radius: 20px;
-    text-align: center;
-    width: 320px;
-    position: relative;
+h1.site-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.1rem;
+  letter-spacing: 3px;
+  color: var(--primary);
+  margin-bottom: 16px;
+  text-align: center;
 }
 
+/* ── Ad Slots ── */
+.ad-slot {
+  width: 100%;
+  max-width: 480px;
+  min-height: 90px;
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+/* ── Game Card ── */
+.game-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Level Badge ── */
+.level-badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--primary);
+  background: rgba(56,189,248,0.1);
+  border: 1px solid rgba(56,189,248,0.2);
+  border-radius: 30px;
+  padding: 4px 14px;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+
+/* ── Stats Grid ── */
 .stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin: 10px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .stat {
-    background: rgba(255,255,255,0.05);
-    padding: 8px;
-    border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-input {
-    width: 80%;
-    font-size: 2rem;
-    text-align: center;
-    margin: 10px;
+.stat-label {
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-button {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
+.stat-value {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
 }
 
-.btn-guess { background: var(--primary); }
-.btn-hint { background: var(--accent); width: 48%; }
-.btn-mega { background: #22c55e; width: 48%; }
+/* ── Timer Bar ── */
+.timer-bar-wrap {
+  width: 100%;
+  height: 4px;
+  background: var(--surface);
+  border-radius: 2px;
+  margin-bottom: 18px;
+  overflow: hidden;
+}
 
-#death-screen {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.9);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    border-radius: 20px;
+.timer-bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1s linear, background 0.5s;
+  background: var(--primary);
+}
+
+/* ── Input ── */
+.input-wrap {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+input[type=number] {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  font-size: 1.8rem;
+  text-align: center;
+  padding: 10px;
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.2s;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+input[type=number]:focus { border-color: var(--primary); }
+
+/* ── Buttons ── */
+.btn {
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  letter-spacing: 0.5px;
+}
+
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.btn-guess { background: var(--primary); color: #0f0e1a; width: 100%; margin-bottom: 10px; font-size: 1rem; padding: 14px; }
+.btn-hint  { background: var(--accent); color: #0f0e1a; flex: 1; }
+.btn-mega  { background: var(--success); color: #0f0e1a; flex: 1; }
+.btn-skip  { background: var(--surface); color: var(--muted); border: 1px solid var(--border); flex: 1; }
+
+.btn-row { display: flex; gap: 8px; margin-bottom: 12px; }
+
+/* ── Message ── */
+.msg-box {
+  min-height: 2.2rem;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--surface);
+  margin-bottom: 14px;
+  transition: color 0.2s;
+}
+
+/* ── Streak ── */
+.streak-bar {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.streak-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: background 0.3s;
+}
+
+.streak-dot.active { background: var(--accent); border-color: var(--accent); }
+
+/* ── Best Score ── */
+.best-label {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+/* ── Power-ups HUD ── */
+.powerup-hud {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.pu-badge {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.pu-badge span { color: var(--text); font-weight: 700; }
+
+/* ── Death Screen ── */
+.death-screen {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,9,22,0.96);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  z-index: 10;
+  padding: 24px;
+  gap: 10px;
+}
+
+.death-screen h2 {
+  font-family: 'Space Mono', monospace;
+  font-size: 2rem;
+  color: var(--danger);
+  letter-spacing: 4px;
+}
+
+.death-screen .final-score {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.5rem;
+  color: var(--text);
+}
+
+.death-screen .best-show {
+  font-size: 0.8rem;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+
+.death-screen .btn-try {
+  margin-top: 10px;
+  background: var(--danger);
+  color: white;
+  border: none;
+  padding: 14px 40px;
+  border-radius: 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.death-screen .btn-try:active { transform: scale(0.97); }
+
+/* ── Win Flash ── */
+@keyframes winFlash {
+  0%   { background: var(--card); }
+  30%  { background: rgba(74,222,128,0.08); }
+  100% { background: var(--card); }
+}
+
+.win-flash { animation: winFlash 0.6s ease; }
+
+/* ── Responsive ── */
+@media (max-width: 420px) {
+  .game-card { padding: 18px 14px; }
+  input[type=number] { font-size: 1.4rem; }
 }
 </style>
 </head>
-
 <body>
 
-<div class="game-box">
+<h1 class="site-title">NUMBER GUESS PRO</h1>
 
-<div id="death-screen">
-    <h1>💀 DEAD</h1>
-    <p id="finalScore"></p>
-    <button onclick="start(true)">TRY AGAIN</button>
+<!-- TOP AD SLOT -->
+<div class="ad-slot">
+  <!--
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+       data-ad-slot="XXXXXXXXXX"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  -->
+  AD SPACE — 728×90 or Responsive
 </div>
 
-<h2 id="levelTitle"></h2>
+<div class="game-card" id="gameCard">
 
-<div class="stats">
-    <div class="stat">❤️ <span id="hp"></span></div>
-    <div class="stat">⏱ <span id="time"></span></div>
-    <div class="stat">🏆 <span id="pts"></span></div>
-    <div class="stat">📊 <span id="tries"></span></div>
+  <!-- Death Screen -->
+  <div class="death-screen" id="deathScreen">
+    <h2>GAME OVER</h2>
+    <div class="final-score" id="finalScore"></div>
+    <div class="best-show" id="bestShow"></div>
+    <button class="btn-try" onclick="start(true)">TRY AGAIN</button>
+  </div>
+
+  <!-- Level Badge -->
+  <div class="level-badge" id="levelBadge">LEVEL 1 — GUESS 1 TO 10</div>
+
+  <!-- Best Score -->
+  <div class="best-label">BEST: <span id="bestEl">0</span></div>
+
+  <!-- Streak -->
+  <div class="streak-bar" id="streakBar"></div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-label">Hearts</span>
+      <span class="stat-value" id="hpEl">❤️❤️❤️</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Time</span>
+      <span class="stat-value" id="timeEl">25</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Score</span>
+      <span class="stat-value" id="ptsEl">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Tries</span>
+      <span class="stat-value" id="triesEl">0</span>
+    </div>
+  </div>
+
+  <!-- Timer Bar -->
+  <div class="timer-bar-wrap">
+    <div class="timer-bar" id="timerBar"></div>
+  </div>
+
+  <!-- Power-ups HUD -->
+  <div class="powerup-hud">
+    <div class="pu-badge">🔒 Freeze: <span id="freezeCount">1</span></div>
+    <div class="pu-badge">💣 Bomb: <span id="bombCount">1</span></div>
+    <div class="pu-badge">🔥 Streak: <span id="streakCount">0</span></div>
+  </div>
+
+  <!-- Input -->
+  <div class="input-wrap">
+    <input type="number" id="inputBox" placeholder="?" min="1" autocomplete="off">
+  </div>
+
+  <!-- Guess Button -->
+  <button class="btn btn-guess" onclick="check()">GUESS</button>
+
+  <!-- Hint Row -->
+  <div class="btn-row">
+    <button class="btn btn-hint" id="btnHint" onclick="hint(50)">💡 Hint (50pts)</button>
+    <button class="btn btn-mega" id="btnMega" onclick="hint(100)">🌟 Mega (100pts)</button>
+    <button class="btn btn-skip" id="btnSkip" onclick="skipRound()">⏭ Skip</button>
+  </div>
+
+  <!-- Power-up Row -->
+  <div class="btn-row">
+    <button class="btn btn-hint" id="btnFreeze" onclick="useFreeze()" style="background:#818cf8;color:#fff;">❄️ Freeze</button>
+    <button class="btn btn-mega" id="btnBomb" onclick="useBomb()" style="background:#f97316;color:#fff;">💣 Bomb</button>
+  </div>
+
+  <!-- Message -->
+  <div class="msg-box" id="msgEl">Start guessing! 🎮</div>
+
 </div>
 
-<input type="number" id="inputBox">
-
-<button class="btn-guess" onclick="check()">GUESS</button>
-
-<div style="display:flex; justify-content:space-between;">
-    <button class="btn-hint" onclick="hint(50)">Hint</button>
-    <button class="btn-mega" onclick="hint(100)">Mega</button>
-</div>
-
-<p id="msg">Start guessing!</p>
-
+<!-- BOTTOM AD SLOT -->
+<div class="ad-slot" style="margin-top:16px;">
+  <!--
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+       data-ad-slot="XXXXXXXXXX"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  -->
+  AD SPACE — 728×90 or Responsive
 </div>
 
 <script>
-const loseSound = new Audio("sounds/lose.mp3");
+// ── Audio (no files needed) ───────────────────────────────────────────────
+let ctx = null;
+function audio() { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); }
 
-function playLose() {
-    loseSound.currentTime = 0;
-    loseSound.play();
-}
-</script>
-
-<script>
-let s = { ans:0, hp:3, pts:0, time:25, range:10, tries:0, end:false };
-let clock;
-
-// Elements
-const hpEl = document.getElementById("hp");
-const timeEl = document.getElementById("time");
-const ptsEl = document.getElementById("pts");
-const triesEl = document.getElementById("tries");
-const msgEl = document.getElementById("msg");
-const inputEl = document.getElementById("inputBox");
-const levelEl = document.getElementById("levelTitle");
-const deathScreen = document.getElementById("death-screen");
-const finalScoreEl = document.getElementById("finalScore");
-
-function start(full){
-    clearInterval(clock);
-    deathScreen.style.display = "none";
-
-    if(full){
-        s.pts = 0;
-        s.range = 10;
-        s.hp = 3;
+function tone(type) {
+  try {
+    audio();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    const t = ctx.currentTime;
+    if (type === 'correct') {
+      o.frequency.setValueAtTime(523, t);
+      o.frequency.setValueAtTime(659, t + 0.1);
+      o.frequency.setValueAtTime(784, t + 0.2);
+      g.gain.setValueAtTime(0.2, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+      o.start(t); o.stop(t + 0.4);
+    } else if (type === 'wrong') {
+      o.frequency.setValueAtTime(200, t);
+      g.gain.setValueAtTime(0.2, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+      o.start(t); o.stop(t + 0.2);
+    } else if (type === 'die') {
+      o.frequency.setValueAtTime(300, t);
+      o.frequency.setValueAtTime(150, t + 0.2);
+      g.gain.setValueAtTime(0.3, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+      o.start(t); o.stop(t + 0.6);
+    } else if (type === 'hint') {
+      o.frequency.setValueAtTime(440, t);
+      o.type = 'sine';
+      g.gain.setValueAtTime(0.15, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+      o.start(t); o.stop(t + 0.15);
+    } else if (type === 'freeze') {
+      o.frequency.setValueAtTime(800, t);
+      o.frequency.setValueAtTime(1000, t + 0.1);
+      o.type = 'sine';
+      g.gain.setValueAtTime(0.15, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+      o.start(t); o.stop(t + 0.25);
     }
-
-    s.ans = Math.floor(Math.random()*s.range)+1;
-    s.time = 25;
-    s.tries = 0;
-    s.end = false;
-
-    update();
-    timer();
+  } catch(e) {}
 }
 
-function update(){
-    hpEl.innerText = "❤️".repeat(s.hp);
+// ── State ────────────────────────────────────────────────────────────────
+let s = {};
+let clock, maxTime = 25;
+let best = parseInt(localStorage.getItem('ngp_best') || '0');
+
+const STREAK_MAX = 5;
+const STREAK_BONUS = [0, 0, 50, 100, 150, 300]; // bonus at each streak level
+
+// ── DOM ──────────────────────────────────────────────────────────────────
+const hpEl       = document.getElementById('hpEl');
+const timeEl      = document.getElementById('timeEl');
+const ptsEl       = document.getElementById('ptsEl');
+const triesEl     = document.getElementById('triesEl');
+const msgEl       = document.getElementById('msgEl');
+const inputEl     = document.getElementById('inputBox');
+const levelBadge  = document.getElementById('levelBadge');
+const deathScreen = document.getElementById('deathScreen');
+const finalScEl   = document.getElementById('finalScore');
+const bestShowEl  = document.getElementById('bestShow');
+const bestEl      = document.getElementById('bestEl');
+const timerBar    = document.getElementById('timerBar');
+const streakBar   = document.getElementById('streakBar');
+const freezeCount = document.getElementById('freezeCount');
+const bombCount   = document.getElementById('bombCount');
+const streakCount = document.getElementById('streakCount');
+const gameCard    = document.getElementById('gameCard');
+
+// ── Streak Dots ───────────────────────────────────────────────────────────
+function buildStreakBar() {
+  streakBar.innerHTML = '';
+  for (let i = 0; i < STREAK_MAX; i++) {
+    const d = document.createElement('div');
+    d.className = 'streak-dot' + (i < s.streak ? ' active' : '');
+    streakBar.appendChild(d);
+  }
+}
+
+// ── Start / Reset ─────────────────────────────────────────────────────────
+function start(full) {
+  clearInterval(clock);
+  deathScreen.style.display = 'none';
+
+  if (full) {
+    s = {
+      ans: 0, hp: 3, pts: 0, range: 10,
+      tries: 0, end: false, level: 1,
+      streak: 0, frozen: false,
+      freezeUses: 1, bombUses: 1,
+      skipsLeft: 2
+    };
+    maxTime = 25;
+  }
+
+  s.ans    = Math.floor(Math.random() * s.range) + 1;
+  s.time   = maxTime;
+  s.tries  = 0;
+  s.end    = false;
+  s.frozen = false;
+
+  inputEl.value = '';
+  setMsg('Start guessing! 🎮', 'var(--text)');
+  updateUI();
+  buildStreakBar();
+  runTimer();
+}
+
+// ── UI Update ─────────────────────────────────────────────────────────────
+function updateUI() {
+  hpEl.innerText     = '❤️'.repeat(s.hp);
+  timeEl.innerText   = s.time;
+  ptsEl.innerText    = s.pts;
+  triesEl.innerText  = s.tries;
+  bestEl.innerText   = best;
+  freezeCount.innerText = s.freezeUses;
+  bombCount.innerText   = s.bombUses;
+  streakCount.innerText = s.streak;
+  levelBadge.innerText  = `LEVEL ${s.level} — GUESS 1 TO ${s.range}`;
+
+  // Timer bar color
+  const pct = s.time / maxTime;
+  timerBar.style.width = (pct * 100) + '%';
+  timerBar.style.background = pct > 0.5 ? '#38bdf8' : pct > 0.25 ? '#fbbf24' : '#f87171';
+
+  // Button states
+  document.getElementById('btnHint').disabled   = s.pts < 50 || s.end;
+  document.getElementById('btnMega').disabled   = s.pts < 100 || s.end;
+  document.getElementById('btnSkip').disabled   = s.skipsLeft <= 0 || s.end;
+  document.getElementById('btnSkip').innerText  = `⏭ Skip (${s.skipsLeft})`;
+  document.getElementById('btnFreeze').disabled = s.freezeUses <= 0 || s.end;
+  document.getElementById('btnBomb').disabled   = s.bombUses <= 0 || s.end;
+
+  buildStreakBar();
+}
+
+function setMsg(text, color) {
+  msgEl.innerText    = text;
+  msgEl.style.color  = color || 'var(--text)';
+}
+
+// ── Timer ─────────────────────────────────────────────────────────────────
+function runTimer() {
+  clearInterval(clock);
+  clock = setInterval(() => {
+    if (s.end || s.frozen) return;
+    s.time--;
     timeEl.innerText = s.time;
-    ptsEl.innerText = s.pts;
-    triesEl.innerText = s.tries;
-    levelEl.innerText = "Guess 1 to " + s.range;
+    const pct = s.time / maxTime;
+    timerBar.style.width = (pct * 100) + '%';
+    timerBar.style.background = pct > 0.5 ? '#38bdf8' : pct > 0.25 ? '#fbbf24' : '#f87171';
+    if (s.time <= 0) die();
+  }, 1000);
 }
 
-function timer(){
-    clock = setInterval(()=>{
-        if(s.end) return;
+// ── Guess ─────────────────────────────────────────────────────────────────
+function check() {
+  if (s.end) return;
+  const v = parseInt(inputEl.value);
+  if (isNaN(v) || v < 1 || v > s.range) {
+    setMsg(`⚠️ Enter a number between 1 and ${s.range}`, '#fbbf24');
+    return;
+  }
 
-        s.time--;
-        timeEl.innerText = s.time;
+  s.tries++;
 
-        if(s.time <= 0) die();
-    },1000);
-}
-
-function check(){
-    if(s.end) return;
-
-    let v = parseInt(inputEl.value);
-    if(isNaN(v)) return;
-
-    s.tries++;
-
-    if(v === s.ans){
-        clearInterval(clock);
-        s.end = true;
-
-        s.pts += 100;
-        msgEl.innerText = "✅ Correct!";
-        msgEl.style.color = "lightgreen";
-
-        s.range += 10;
-        s.hp = Math.min(5, s.hp + 1);
-
-        setTimeout(()=>start(false),1500);
-    } 
-    else {
-        s.hp--;
-        msgEl.innerText = v > s.ans ? "📉 Lower!" : "📈 Higher!";
-        msgEl.style.color = "white";
-
-        if(s.hp <= 0) die();
-    }
-
-    update();
-    inputEl.value = "";
-}
-
-function hint(cost){
-
-    // ❌ Not enough points
-    if(s.pts < cost){
-        msgEl.innerText = "❌ Not enough points!";
-        msgEl.style.color = "red";
-        return;
-    }
-
-    // ⚠️ Game already ended
-    if(s.end){
-        msgEl.innerText = "⚠️ Round finished!";
-        msgEl.style.color = "orange";
-        return;
-    }
-
-    s.pts -= cost;
-
-    if(cost === 50){
-        msgEl.innerText = (s.ans % 2 === 0) 
-            ? "💡 It is EVEN" 
-            : "💡 It is ODD";
-    } else {
-        msgEl.innerText = "🌟 Between " + (s.ans-2) + " and " + (s.ans+2);
-    }
-
-    msgEl.style.color = "#fbbf24";
-
-    update();
-}
-
-function die(){
-    s.end = true;
+  if (v === s.ans) {
     clearInterval(clock);
+    s.end = true;
 
-    playLose(); // 🔊 SOUND
+    // Score: base + time bonus + streak bonus
+    const timeBonus  = s.time * 4;
+    const streakBonus = STREAK_BONUS[Math.min(s.streak, STREAK_MAX - 1)];
+    const earned     = 100 + timeBonus + streakBonus;
+    s.pts += earned;
+    s.streak = Math.min(s.streak + 1, STREAK_MAX);
 
-    finalScoreEl.innerText = "Score: " + s.pts;
-    deathScreen.style.display = "flex";
+    // Level up
+    s.level++;
+    s.range += 10;
+    maxTime  = Math.max(10, maxTime - 1); // gets harder
+    s.hp     = Math.min(5, s.hp + 1);
+
+    // Reward power-up every 3 levels
+    if (s.level % 3 === 0) { s.freezeUses++; s.bombUses++; }
+
+    gameCard.classList.add('win-flash');
+    setTimeout(() => gameCard.classList.remove('win-flash'), 700);
+
+    let msg = `✅ Correct! +${earned} pts`;
+    if (streakBonus > 0) msg += ` (🔥 Streak +${streakBonus})`;
+    setMsg(msg, '#4ade80');
+    tone('correct');
+
+    saveBest();
+    updateUI();
+    setTimeout(() => start(false), 1800);
+
+  } else {
+    s.hp--;
+    s.streak = 0;
+    tone('wrong');
+
+    const dir = v > s.ans ? '📉 Too High!' : '📈 Too Low!';
+    setMsg(dir, 'var(--text)');
+
+    if (s.hp <= 0) { updateUI(); die(); return; }
+    updateUI();
+  }
+
+  inputEl.value = '';
 }
 
+// ── Hint ──────────────────────────────────────────────────────────────────
+function hint(cost) {
+  if (s.end) { setMsg('⚠️ Round finished!', '#fbbf24'); return; }
+  if (s.pts < cost) { setMsg('❌ Not enough points!', 'var(--danger)'); return; }
+
+  s.pts -= cost;
+  tone('hint');
+
+  if (cost === 50) {
+    setMsg(s.ans % 2 === 0 ? '💡 The number is EVEN' : '💡 The number is ODD', '#fbbf24');
+  } else {
+    const lo = Math.max(1, s.ans - 2), hi = Math.min(s.range, s.ans + 2);
+    setMsg(`🌟 It's between ${lo} and ${hi}`, '#fbbf24');
+  }
+
+  updateUI();
+}
+
+// ── Skip ─────────────────────────────────────────────────────────────────
+function skipRound() {
+  if (s.end || s.skipsLeft <= 0) return;
+  s.skipsLeft--;
+  s.streak = 0;
+  clearInterval(clock);
+  s.end = true;
+  setMsg(`⏭ Skipped! The answer was ${s.ans}`, 'var(--muted)');
+  updateUI();
+  setTimeout(() => start(false), 1600);
+}
+
+// ── Freeze Power-up ───────────────────────────────────────────────────────
+function useFreeze() {
+  if (s.freezeUses <= 0 || s.end) return;
+  s.freezeUses--;
+  s.frozen = true;
+  tone('freeze');
+  setMsg('❄️ Time FROZEN for 5 seconds!', '#818cf8');
+  updateUI();
+  setTimeout(() => {
+    s.frozen = false;
+    setMsg('❄️ Freeze ended!', 'var(--muted)');
+  }, 5000);
+}
+
+// ── Bomb Power-up (eliminates half wrong options) ────────────────────────
+function useBomb() {
+  if (s.bombUses <= 0 || s.end) return;
+  s.bombUses--;
+  tone('hint');
+
+  // Give a tighter range hint
+  const spread = Math.max(2, Math.floor(s.range * 0.2));
+  const lo = Math.max(1, s.ans - spread);
+  const hi = Math.min(s.range, s.ans + spread);
+  setMsg(`💣 BOMB! It's between ${lo} and ${hi}`, '#f97316');
+  updateUI();
+}
+
+// ── Die ───────────────────────────────────────────────────────────────────
+function die() {
+  s.end = true;
+  clearInterval(clock);
+  tone('die');
+  saveBest();
+
+  finalScEl.innerText  = `Score: ${s.pts}`;
+  bestShowEl.innerText = `Best: ${best}`;
+  deathScreen.style.display = 'flex';
+}
+
+// ── Best Score ────────────────────────────────────────────────────────────
+function saveBest() {
+  if (s.pts > best) {
+    best = s.pts;
+    localStorage.setItem('ngp_best', best);
+  }
+}
+
+// ── Keyboard Support ──────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') check();
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────
 start(true);
 </script>
-<script async="async" data-cfasync="false" src="https://pl29529472.effectivecpmnetwork.com/70a5fb5b9a749f9711fccd87e653c11f/invoke.js"></script>
-<div id="container-70a5fb5b9a749f9711fccd87e653c11f"></div>
+
 </body>
 </html>
-<script src="https://pl29643779.effectivecpmnetwork.com/0f/ff/3d/0fff3d9c24531b389bd350b97b1a7d0e.js"></script>
