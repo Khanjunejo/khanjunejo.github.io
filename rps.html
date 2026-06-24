@@ -2,129 +2,200 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="description" content="Tic Tac Toe Pro — Play against a friend or challenge the AI across three difficulty levels. First to master the grid wins!">
-  <title>Tic Tac Toe Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Rock Paper Scissors Pro - A fun browser game. Play against the computer and be the first to 5 points!">
+  <title>Rock Paper Scissors Pro</title>
+
+  <!-- ✅ PASTE YOUR GOOGLE ADSENSE SCRIPT TAG HERE -->
+  <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@700&display=swap');
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg:#12111a; --surface:#1c1a2e; --surface2:#252340;
-      --x-color:#f5a623; --o-color:#a78bfa;
-      --text-main:#e2e0f0; --text-muted:#6b6880;
-      --border:rgba(255,255,255,0.07); --radius:16px;
+      --accent-blue: #00f7ff;
+      --accent-pink: #ff007a;
+      --bg-dark: #0f172a;
+      --glass: rgba(255, 255, 255, 0.05);
     }
-    body { background:var(--bg); color:var(--text-main); font-family:'Space Grotesk',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:24px 16px 40px; }
-    .site-header { width:100%; max-width:480px; display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; }
-    .logo { font-family:'Space Mono',monospace; font-size:1.1rem; letter-spacing:2px; color:var(--text-main); }
-    .logo span { color:var(--x-color); }
-    .scoreboard { width:100%; max-width:480px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:24px; }
-    .score-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 10px; text-align:center; }
-    .score-card .sc-label { font-size:0.6rem; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px; display:block; }
-    .score-card .sc-num { font-family:'Space Mono',monospace; font-size:1.8rem; font-weight:700; line-height:1; }
-    .score-card.x-card .sc-num { color:var(--x-color); }
-    .score-card.o-card .sc-num { color:var(--o-color); }
-    .score-card.d-card .sc-num { color:var(--text-muted); }
-    .controls { width:100%; max-width:480px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; margin-bottom:20px; }
-    .name-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
-    .name-field { position:relative; }
-    .name-field label { position:absolute; top:-8px; left:10px; font-size:0.6rem; letter-spacing:1.5px; text-transform:uppercase; padding:0 4px; background:var(--surface); }
-    .name-field.x-field label { color:var(--x-color); }
-    .name-field.o-field label { color:var(--o-color); }
-    .name-field input { width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text-main); padding:10px 12px; border-radius:10px; font-family:'Space Grotesk',sans-serif; font-size:0.9rem; outline:none; transition:border-color 0.2s; }
-    .name-field.x-field input:focus { border-color:var(--x-color); }
-    .name-field.o-field input:focus { border-color:var(--o-color); }
-    .options-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:center; }
-    .toggle-label { display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem; color:var(--text-muted); user-select:none; }
-    .toggle-track { width:38px; height:20px; background:var(--surface2); border-radius:10px; position:relative; border:1px solid var(--border); flex-shrink:0; transition:background 0.2s; }
-    .toggle-track::after { content:''; position:absolute; width:14px; height:14px; background:var(--text-muted); border-radius:50%; top:2px; left:2px; transition:left 0.2s, background 0.2s; }
-    #aiToggle:checked + .toggle-label .toggle-track { background:rgba(167,139,250,0.2); border-color:var(--o-color); }
-    #aiToggle:checked + .toggle-label .toggle-track::after { left:20px; background:var(--o-color); }
-    #aiToggle { display:none; }
-    select { width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text-main); padding:10px 12px; border-radius:10px; font-family:'Space Grotesk',sans-serif; font-size:0.85rem; cursor:pointer; outline:none; appearance:none; -webkit-appearance:none; }
-    select option { background:#1c1a2e; color:var(--text-main); }
-    .turn-bar { width:100%; max-width:480px; height:3px; background:var(--surface2); border-radius:2px; margin-bottom:14px; overflow:hidden; }
-    .turn-bar-fill { height:100%; width:50%; border-radius:2px; transition:background 0.3s, width 0.3s; background:var(--x-color); box-shadow:0 0 8px var(--x-color); }
-    .turn-label { width:100%; max-width:480px; font-size:0.75rem; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:14px; text-align:center; }
-    .turn-label strong { font-weight:700; transition:color 0.3s; }
-    .board-wrap { width:100%; max-width:340px; aspect-ratio:1; margin-bottom:20px; }
-    #board { display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); gap:10px; width:100%; height:100%; }
-    .cell { background:var(--surface); border:1px solid var(--border); border-radius:14px; display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:2.4rem; font-weight:700; cursor:pointer; user-select:none; transition:background 0.15s, transform 0.1s, border-color 0.2s; position:relative; overflow:hidden; }
-    .cell:hover:not(.taken) { background:var(--surface2); border-color:rgba(255,255,255,0.15); }
-    .cell.taken { cursor:default; }
-    @keyframes stamp { 0%{transform:scale(1.5);opacity:0;} 60%{transform:scale(0.9);opacity:1;} 100%{transform:scale(1);opacity:1;} }
-    .cell .mark { display:inline-block; animation:stamp 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-    .cell.winner { border-color:transparent; animation:pulse-win 0.6s ease infinite alternate; }
-    @keyframes pulse-win { from{transform:scale(1);} to{transform:scale(1.04);} }
-    .cell.winner-x { background:rgba(245,166,35,0.15); border-color:var(--x-color); }
-    .cell.winner-o { background:rgba(167,139,250,0.15); border-color:var(--o-color); }
-    .result-text { width:100%; max-width:480px; min-height:2rem; text-align:center; font-family:'Space Mono',monospace; font-size:1rem; letter-spacing:2px; font-weight:700; text-transform:uppercase; margin-bottom:8px; transition:color 0.3s; }
-    .countdown-text { width:100%; max-width:480px; text-align:center; font-size:0.75rem; letter-spacing:1px; color:var(--text-muted); margin-bottom:14px; min-height:1.2rem; }
-    .action-row { display:flex; gap:10px; width:100%; max-width:480px; margin-bottom:28px; }
-    .btn { flex:1; padding:13px; border-radius:12px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:0.85rem; letter-spacing:0.5px; cursor:pointer; border:none; transition:opacity 0.2s, transform 0.1s; }
-    .btn:active { transform:scale(0.97); }
-    .btn-primary { background:var(--x-color); color:#12111a; }
-    .btn-secondary { background:var(--surface); color:var(--text-muted); border:1px solid var(--border); }
-    .ad-slot { width:100%; max-width:480px; min-height:90px; background:var(--surface); border:1px dashed var(--border); border-radius:var(--radius); display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:0.75rem; letter-spacing:1px; }
-    @media (max-width:380px) { .board-wrap{max-width:290px;} .cell{font-size:2rem;border-radius:10px;} }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      background: var(--bg-dark);
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 1rem;
+      letter-spacing: 4px;
+      color: #475569;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .game-card {
+      background: rgba(15, 23, 42, 0.95);
+      padding: 40px;
+      border-radius: 30px;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+
+    /* Score Display */
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .score-label { font-size: 0.65rem; letter-spacing: 2px; color: #64748b; text-transform: uppercase; }
+    .score-num { font-size: 1.1rem; font-weight: bold; }
+    #userScore { color: var(--accent-blue); }
+    #compScore { color: var(--accent-pink); }
+
+    /* Health Bars */
+    .stats { display: flex; justify-content: space-between; margin-bottom: 25px; gap: 10px; }
+    .bar-container { width: 45%; }
+    .bar { height: 8px; background: #1e293b; border-radius: 10px; overflow: hidden; }
+    .fill { height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+    #userFill { background: var(--accent-blue); box-shadow: 0 0 10px var(--accent-blue); }
+    #compFill { background: var(--accent-pink); box-shadow: 0 0 10px var(--accent-pink); }
+
+    /* Battle Zone */
+    .arena {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: rgba(0,0,0,0.3);
+      padding: 30px;
+      border-radius: 20px;
+      margin-bottom: 25px;
+    }
+    .hand { font-size: 4rem; transition: transform 0.2s; display: block; user-select: none; }
+    .vs-text { color: #334155; font-weight: bold; font-size: 0.9rem; }
+
+    /* Shake Animation */
+    .animating { animation: shake 0.18s ease infinite; }
+    @keyframes shake {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-14px); }
+    }
+
+    /* Choice Buttons */
+    .choices { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+    .choice-btn {
+      background: var(--glass);
+      border: 1px solid rgba(255,255,255,0.1);
+      font-size: 2.5rem;
+      padding: 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: border-color 0.3s, transform 0.3s;
+      line-height: 1;
+    }
+    .choice-btn:hover:not(:disabled) {
+      border-color: var(--accent-blue);
+      transform: translateY(-5px);
+    }
+    .choice-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #msg {
+      font-weight: bold;
+      margin: 20px 0 0;
+      min-height: 1.6em;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-size: 0.95rem;
+      color: white;
+      transition: color 0.3s;
+    }
+
+    .reset-btn {
+      margin-top: 20px;
+      background: none;
+      border: none;
+      color: #475569;
+      cursor: pointer;
+      font-size: 0.8rem;
+      text-decoration: underline;
+      padding: 5px 10px;
+    }
+    .reset-btn:hover { color: #94a3b8; }
+
+    /* AdSense Ad Slot */
+    .ad-slot {
+      margin-top: 24px;
+      width: 100%;
+      max-width: 420px;
+      min-height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   </style>
 </head>
 <body>
 
-  <header class="site-header">
-    <div class="logo">TIC<span>X</span>TOE</div>
-    <div style="font-size:0.7rem;letter-spacing:1.5px;color:var(--text-muted);text-transform:uppercase;">Pro Edition</div>
-  </header>
+  <h1>Rock Paper Scissors Pro</h1>
 
-  <div class="scoreboard" role="region" aria-label="Scores">
-    <div class="score-card x-card"><span class="sc-label">Player X</span><span class="sc-num" id="scoreX">0</span></div>
-    <div class="score-card d-card"><span class="sc-label">Draws</span><span class="sc-num" id="draws">0</span></div>
-    <div class="score-card o-card"><span class="sc-label">Player O</span><span class="sc-num" id="scoreO">0</span></div>
-  </div>
+  <div class="game-card">
 
-  <div class="controls">
-    <div class="name-row">
-      <div class="name-field x-field"><label for="playerX">Player X</label><input type="text" id="playerX" placeholder="Enter name" maxlength="12" autocomplete="off"></div>
-      <div class="name-field o-field"><label for="playerO">Player O</label><input type="text" id="playerO" placeholder="AI Bot" maxlength="12" autocomplete="off"></div>
+    <!-- Score Numbers -->
+    <div class="score-row">
+      <span class="score-label">Player</span>
+      <span class="score-label">Computer</span>
     </div>
-    <div class="options-row">
-      <div>
-        <input type="checkbox" id="aiToggle" checked>
-        <label for="aiToggle" class="toggle-label"><span class="toggle-track"></span><span id="aiLabel">vs AI</span></label>
+    <div class="score-row" style="margin-bottom: 10px;">
+      <span class="score-num" id="userScore">0</span>
+      <span style="color:#334155; font-size:0.8rem;">FIRST TO 5</span>
+      <span class="score-num" id="compScore">0</span>
+    </div>
+
+    <!-- Progress Bars -->
+    <div class="stats">
+      <div class="bar-container">
+        <div class="bar"><div id="userFill" class="fill"></div></div>
       </div>
-      <select id="difficulty" aria-label="AI Difficulty">
-        <option value="easy">Easy</option>
-        <option value="medium">Medium</option>
-        <option value="hard" selected>Hard</option>
-      </select>
+      <div class="bar-container">
+        <div class="bar"><div id="compFill" class="fill"></div></div>
+      </div>
     </div>
-  </div>
 
-  <div class="turn-bar"><div class="turn-bar-fill" id="turnBarFill"></div></div>
-  <p class="turn-label" id="turnLabel" role="status" aria-live="polite"><strong id="turnName">X</strong>'S TURN</p>
-
-  <div class="board-wrap">
-    <div id="board" role="grid" aria-label="Game board">
-      <div class="cell" data-i="0" role="gridcell" aria-label="Cell 1" tabindex="0"></div>
-      <div class="cell" data-i="1" role="gridcell" aria-label="Cell 2" tabindex="0"></div>
-      <div class="cell" data-i="2" role="gridcell" aria-label="Cell 3" tabindex="0"></div>
-      <div class="cell" data-i="3" role="gridcell" aria-label="Cell 4" tabindex="0"></div>
-      <div class="cell" data-i="4" role="gridcell" aria-label="Cell 5" tabindex="0"></div>
-      <div class="cell" data-i="5" role="gridcell" aria-label="Cell 6" tabindex="0"></div>
-      <div class="cell" data-i="6" role="gridcell" aria-label="Cell 7" tabindex="0"></div>
-      <div class="cell" data-i="7" role="gridcell" aria-label="Cell 8" tabindex="0"></div>
-      <div class="cell" data-i="8" role="gridcell" aria-label="Cell 9" tabindex="0"></div>
+    <!-- Arena -->
+    <div class="arena">
+      <span id="uHand" class="hand" role="img" aria-label="Your choice">✊</span>
+      <span class="vs-text">VS</span>
+      <span id="cHand" class="hand" role="img" aria-label="Computer choice">✊</span>
     </div>
+
+    <!-- Status Message -->
+    <p id="msg" role="status" aria-live="polite">Choose Your Weapon</p>
+
+    <!-- Choice Buttons -->
+    <div class="choices">
+      <button class="choice-btn" id="btnRock"     aria-label="Rock"     onclick="play('rock')">✊</button>
+      <button class="choice-btn" id="btnPaper"    aria-label="Paper"    onclick="play('paper')">✋</button>
+      <button class="choice-btn" id="btnScissors" aria-label="Scissors" onclick="play('scissors')">✌️</button>
+    </div>
+
+    <button class="reset-btn" onclick="resetMatch()">🔄 Reset Match</button>
   </div>
 
-  <p class="result-text" id="result" role="status" aria-live="assertive"></p>
-  <p class="countdown-text" id="countdown"></p>
-
-  <div class="action-row">
-    <button class="btn btn-primary" id="btnReset" onclick="resetBoard()">🔄 New Round</button>
-    <button class="btn btn-secondary" id="btnClear" onclick="clearScores()">🗑 Clear Scores</button>
-  </div>
-
+  <!-- ✅ GOOGLE ADSENSE AD UNIT — Replace data-ad-* values with your own -->
   <div class="ad-slot">
     <!--
     <ins class="adsbygoogle"
@@ -135,208 +206,158 @@
          data-full-width-responsive="true"></ins>
     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     -->
-    AD SPACE
   </div>
 
   <script>
+    // ─── Web Audio Tones (no external files needed) ───────────────────────────
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
-    function ensureAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+    function ensureAudioCtx() {
+      if (!audioCtx) audioCtx = new AudioCtx();
+    }
+
     function playTone(type) {
       try {
-        ensureAudio();
-        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-        o.connect(g); g.connect(audioCtx.destination);
-        const t = audioCtx.currentTime;
-        if (type === 'win') { o.frequency.setValueAtTime(440,t); o.frequency.setValueAtTime(554,t+0.12); o.frequency.setValueAtTime(659,t+0.24); g.gain.setValueAtTime(0.25,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.55); o.start(t); o.stop(t+0.55); }
-        else if (type === 'lose') { o.frequency.setValueAtTime(330,t); o.frequency.setValueAtTime(220,t+0.18); g.gain.setValueAtTime(0.25,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.5); o.start(t); o.stop(t+0.5); }
-        else if (type === 'place') { o.frequency.setValueAtTime(600,t); o.type='sine'; g.gain.setValueAtTime(0.1,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.12); o.start(t); o.stop(t+0.12); }
-        else if (type === 'draw') { o.frequency.setValueAtTime(400,t); g.gain.setValueAtTime(0.15,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.3); o.start(t); o.stop(t+0.3); }
-      } catch(e) {}
-    }
+        ensureAudioCtx();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
 
-    let board = Array(9).fill(''), currentPlayer = 'X', starter = 'X', gameActive = true, isAiThinking = false;
-    let scores = { X:0, O:0, draws:0 };
-    let autoRestartTimer = null, countdownInterval = null;
-    const WIN_PATTERNS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-    const cells = document.querySelectorAll('.cell');
-    const resultEl = document.getElementById('result');
-    const countdownEl = document.getElementById('countdown');
-    const turnNameEl = document.getElementById('turnName');
-    const turnBarFill = document.getElementById('turnBarFill');
-    const aiToggle = document.getElementById('aiToggle');
-    const diffSelect = document.getElementById('difficulty');
-    const btnReset = document.getElementById('btnReset');
-
-    cells.forEach(cell => {
-      cell.addEventListener('click', handleClick);
-      cell.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') handleClick.call(cell,e); });
-    });
-
-    aiToggle.addEventListener('change', () => {
-      document.getElementById('aiLabel').textContent = aiToggle.checked ? 'vs AI' : '2 Players';
-      resetBoard();
-    });
-
-    function getName(p) {
-      const raw = document.getElementById('player'+p).value.trim();
-      if (p==='O' && aiToggle.checked) return raw || 'AI Bot';
-      return raw || 'Player '+p;
-    }
-
-    function lockBoard(locked) {
-      cells.forEach(c => { if (!c.classList.contains('taken')) c.style.pointerEvents = locked ? 'none' : ''; });
-    }
-
-    function updateTurnUI() {
-      const name = getName(currentPlayer);
-      turnNameEl.textContent = name;
-      turnNameEl.style.color = currentPlayer==='X' ? 'var(--x-color)' : 'var(--o-color)';
-      turnBarFill.style.background = currentPlayer==='X' ? 'var(--x-color)' : 'var(--o-color)';
-      turnBarFill.style.boxShadow = currentPlayer==='X' ? '0 0 8px var(--x-color)' : '0 0 8px var(--o-color)';
-      turnBarFill.style.width = currentPlayer==='X' ? '35%' : '65%';
-    }
-
-    function updateScoreboard() {
-      document.getElementById('scoreX').textContent = scores.X;
-      document.getElementById('scoreO').textContent = scores.O;
-      document.getElementById('draws').textContent = scores.draws;
-    }
-
-    function placeMarker(i, player) {
-      board[i] = player;
-      const cell = cells[i];
-      cell.innerHTML = `<span class="mark" style="color:${player==='X'?'var(--x-color)':'var(--o-color)'}">${player}</span>`;
-      cell.classList.add('taken');
-      cell.setAttribute('aria-label', `Cell ${+i+1}: ${player}`);
-      playTone('place');
-      if (!checkWinner()) { currentPlayer = currentPlayer==='X' ? 'O' : 'X'; updateTurnUI(); }
-    }
-
-    function handleClick() {
-      const i = parseInt(this.getAttribute('data-i'));
-      if (board[i]!=='' || !gameActive || isAiThinking) return;
-      placeMarker(i, currentPlayer);
-      if (gameActive && aiToggle.checked && currentPlayer==='O') {
-        isAiThinking = true; lockBoard(true);
-        setTimeout(doAiMove, 550);
+        if (type === 'win') {
+          osc.frequency.setValueAtTime(523, audioCtx.currentTime);       // C5
+          osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1); // E5
+          osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.2); // G5
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+          osc.start(audioCtx.currentTime);
+          osc.stop(audioCtx.currentTime + 0.5);
+        } else if (type === 'lose') {
+          osc.frequency.setValueAtTime(330, audioCtx.currentTime);
+          osc.frequency.setValueAtTime(220, audioCtx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+          osc.start(audioCtx.currentTime);
+          osc.stop(audioCtx.currentTime + 0.5);
+        } else if (type === 'draw') {
+          osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+          osc.start(audioCtx.currentTime);
+          osc.stop(audioCtx.currentTime + 0.3);
+        }
+      } catch (e) {
+        // Audio not supported — fail silently
       }
     }
 
-    function doAiMove() {
-      if (!gameActive) { isAiThinking = false; lockBoard(false); return; }
-      let move;
-      const lvl = diffSelect.value;
-      if      (lvl==='easy')   move = getRandomMove();
-      else if (lvl==='medium') move = Math.random()<0.5 ? getBestMove() : getRandomMove();
-      else                     move = getBestMove();
-      if (move !== undefined) placeMarker(move, 'O');
-      isAiThinking = false;
-      if (gameActive) lockBoard(false);
-    }
+    // ─── Game State ───────────────────────────────────────────────────────────
+    let uScore = 0;
+    let cScore = 0;
+    const GOAL = 5;
+    let locked = false;
 
-    function getRandomMove() {
-      const avail = board.map((v,i) => v==='' ? i : null).filter(v => v!==null);
-      return avail[Math.floor(Math.random()*avail.length)];
-    }
+    const emojis = { rock: '✊', paper: '✋', scissors: '✌️' };
 
-    function getBestMove() {
-      let best = -Infinity, move;
-      for (let i=0; i<9; i++) {
-        if (board[i]==='') { board[i]='O'; const s=minimax(board,0,false); board[i]=''; if(s>best){best=s;move=i;} }
-      }
-      return move;
-    }
-
-    function minimax(b, depth, isMax) {
-      const w = silentWinner(b);
-      if (w==='O') return 10-depth;
-      if (w==='X') return depth-10;
-      if (!b.includes('')) return 0;
-      if (isMax) {
-        let best = -Infinity;
-        for (let i=0;i<9;i++) { if(b[i]===''){b[i]='O';best=Math.max(best,minimax(b,depth+1,false));b[i]='';} }
-        return best;
-      } else {
-        let best = Infinity;
-        for (let i=0;i<9;i++) { if(b[i]===''){b[i]='X';best=Math.min(best,minimax(b,depth+1,true));b[i]='';} }
-        return best;
-      }
-    }
-
-    function silentWinner(b) {
-      for (const [a,c,d] of WIN_PATTERNS) { if(b[a]&&b[a]===b[c]&&b[a]===b[d]) return b[a]; }
-      return null;
-    }
-
-    function checkWinner() {
-      for (const pattern of WIN_PATTERNS) {
-        const [a,b2,c] = pattern;
-        if (board[a]&&board[a]===board[b2]&&board[a]===board[c]) { endGame(board[a],pattern); return true; }
-      }
-      if (!board.includes('')) { endGame('draw',null); return true; }
-      return false;
-    }
-
-    function startAutoRestart() {
-      clearAutoRestart();
-      let secs = 3;
-      countdownEl.textContent = `Next round in ${secs}s...`;
-      countdownInterval = setInterval(() => {
-        secs--;
-        if (secs > 0) { countdownEl.textContent = `Next round in ${secs}s...`; }
-        else { countdownEl.textContent = ''; clearInterval(countdownInterval); }
-      }, 1000);
-      autoRestartTimer = setTimeout(() => { resetBoard(); }, 3000);
-    }
-
-    function clearAutoRestart() {
-      if (autoRestartTimer) { clearTimeout(autoRestartTimer); autoRestartTimer = null; }
-      if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
-      countdownEl.textContent = '';
-    }
-
-    function endGame(winner, pattern) {
-      gameActive = false;
-      lockBoard(true);
-      if (winner==='draw') {
-        resultEl.textContent = 'DRAW — No Winner 🤝';
-        resultEl.style.color = 'var(--text-muted)';
-        scores.draws++;
-        playTone('draw');
-      } else {
-        const cls = winner==='X' ? 'winner-x' : 'winner-o';
-        pattern.forEach(i => cells[i].classList.add('winner', cls));
-        resultEl.textContent = `${getName(winner).toUpperCase()} WINS! 🎉`;
-        resultEl.style.color = winner==='X' ? 'var(--x-color)' : 'var(--o-color)';
-        scores[winner]++;
-        playTone(winner==='X' ? 'win' : 'lose');
-      }
-      updateScoreboard();
-      startAutoRestart();
-    }
-
-    function resetBoard() {
-      clearAutoRestart();
-      board = Array(9).fill('');
-      gameActive = true; isAiThinking = false;
-      starter = starter==='X' ? 'O' : 'X';
-      currentPlayer = starter;
-      cells.forEach(c => {
-        c.innerHTML = ''; c.className = 'cell'; c.style.pointerEvents = '';
-        c.setAttribute('aria-label', `Cell ${+c.getAttribute('data-i')+1}`);
+    function setButtons(disabled) {
+      ['btnRock', 'btnPaper', 'btnScissors'].forEach(id => {
+        document.getElementById(id).disabled = disabled;
       });
-      resultEl.textContent = '';
-      btnReset.disabled = false;
-      updateTurnUI();
-      if (aiToggle.checked && currentPlayer==='O') {
-        isAiThinking = true; lockBoard(true);
-        setTimeout(doAiMove, 550);
-      }
     }
 
-    function clearScores() { scores={X:0,O:0,draws:0}; updateScoreboard(); }
+    function play(choice) {
+      if (locked) return;
+      locked = true;
+      setButtons(true);
 
-    updateTurnUI();
+      const items = ['rock', 'paper', 'scissors'];
+      const cpu = items[Math.floor(Math.random() * 3)];
+
+      const uEl  = document.getElementById('uHand');
+      const cEl  = document.getElementById('cHand');
+      const msg  = document.getElementById('msg');
+
+      // Shake animation
+      uEl.textContent = '✊';
+      cEl.textContent = '✊';
+      uEl.classList.add('animating');
+      cEl.classList.add('animating');
+      msg.textContent = 'Battle...';
+      msg.style.color = 'white';
+
+      setTimeout(() => {
+        uEl.classList.remove('animating');
+        cEl.classList.remove('animating');
+        uEl.textContent = emojis[choice];
+        cEl.textContent = emojis[cpu];
+
+        let result;
+        if (choice === cpu) {
+          result = 'draw';
+          msg.textContent = 'DRAW! 🤝';
+          msg.style.color = 'white';
+          playTone('draw');
+        } else if (
+          (choice === 'rock'     && cpu === 'scissors') ||
+          (choice === 'paper'    && cpu === 'rock')     ||
+          (choice === 'scissors' && cpu === 'paper')
+        ) {
+          uScore++;
+          result = 'win';
+          msg.textContent = 'POINT FOR YOU! 🔥';
+          msg.style.color = 'var(--accent-blue)';
+          playTone('win');
+        } else {
+          cScore++;
+          result = 'lose';
+          msg.textContent = 'CPU SCORED! 💀';
+          msg.style.color = 'var(--accent-pink)';
+          playTone('lose');
+        }
+
+        // Update bars and scores
+        document.getElementById('userFill').style.width  = (uScore / GOAL * 100) + '%';
+        document.getElementById('compFill').style.width  = (cScore / GOAL * 100) + '%';
+        document.getElementById('userScore').textContent = uScore;
+        document.getElementById('compScore').textContent = cScore;
+
+        // Check match end
+        if (uScore >= GOAL) {
+          msg.textContent = '🏆 YOU WIN THE MATCH!';
+          msg.style.color = 'var(--accent-blue)';
+          // Keep buttons disabled — match is over
+          locked = false;
+          return;
+        }
+        if (cScore >= GOAL) {
+          msg.textContent = '💀 CPU WINS THE MATCH!';
+          msg.style.color = 'var(--accent-pink)';
+          locked = false;
+          return;
+        }
+
+        // Re-enable buttons for next round
+        locked = false;
+        setButtons(false);
+      }, 700);
+    }
+
+    function resetMatch() {
+      uScore = 0;
+      cScore = 0;
+      locked = false;
+      setButtons(false);
+      document.getElementById('userFill').style.width  = '0%';
+      document.getElementById('compFill').style.width  = '0%';
+      document.getElementById('userScore').textContent = '0';
+      document.getElementById('compScore').textContent = '0';
+      document.getElementById('uHand').textContent     = '✊';
+      document.getElementById('cHand').textContent     = '✊';
+      const msg = document.getElementById('msg');
+      msg.textContent = 'Choose Your Weapon';
+      msg.style.color = 'white';
+    }
   </script>
 
 </body>
