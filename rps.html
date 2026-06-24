@@ -2,7 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>RPS Pro - Sound Integrated</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Rock Paper Scissors Pro - A fun browser game. Play against the computer and be the first to 5 points!">
+  <title>Rock Paper Scissors Pro</title>
+
+  <!-- ✅ PASTE YOUR GOOGLE ADSENSE SCRIPT TAG HERE -->
+  <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+
   <style>
     :root {
       --accent-blue: #00f7ff;
@@ -10,6 +16,8 @@
       --bg-dark: #0f172a;
       --glass: rgba(255, 255, 255, 0.05);
     }
+
+    *, *::before, *::after { box-sizing: border-box; }
 
     body {
       background: var(--bg-dark);
@@ -21,24 +29,45 @@
       justify-content: center;
       min-height: 100vh;
       margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 1rem;
+      letter-spacing: 4px;
+      color: #475569;
+      text-transform: uppercase;
+      margin-bottom: 16px;
     }
 
     .game-card {
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.95);
       padding: 40px;
       border-radius: 30px;
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.08);
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
-      width: 400px;
+      width: 100%;
+      max-width: 420px;
       text-align: center;
     }
 
+    /* Score Display */
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .score-label { font-size: 0.65rem; letter-spacing: 2px; color: #64748b; text-transform: uppercase; }
+    .score-num { font-size: 1.1rem; font-weight: bold; }
+    #userScore { color: var(--accent-blue); }
+    #compScore { color: var(--accent-pink); }
+
     /* Health Bars */
-    .stats { display: flex; justify-content: space-between; margin-bottom: 25px; }
+    .stats { display: flex; justify-content: space-between; margin-bottom: 25px; gap: 10px; }
     .bar-container { width: 45%; }
-    .label { font-size: 0.7rem; letter-spacing: 2px; color: #64748b; margin-bottom: 5px; display: block; }
     .bar { height: 8px; background: #1e293b; border-radius: 10px; overflow: hidden; }
-    .fill { height: 100%; width: 0%; transition: 0.4s ease; }
+    .fill { height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
     #userFill { background: var(--accent-blue); box-shadow: 0 0 10px var(--accent-blue); }
     #compFill { background: var(--accent-pink); box-shadow: 0 0 10px var(--accent-pink); }
 
@@ -52,16 +81,18 @@
       border-radius: 20px;
       margin-bottom: 25px;
     }
-    .hand { font-size: 4rem; transition: 0.2s; }
-    
+    .hand { font-size: 4rem; transition: transform 0.2s; display: block; user-select: none; }
+    .vs-text { color: #334155; font-weight: bold; font-size: 0.9rem; }
+
     /* Shake Animation */
-    .animating { animation: shake 0.2s ease infinite; }
+    .animating { animation: shake 0.18s ease infinite; }
     @keyframes shake {
       0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-15px); }
+      50% { transform: translateY(-14px); }
     }
 
-    .choices { display: flex; justify-content: center; gap: 15px; }
+    /* Choice Buttons */
+    .choices { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
     .choice-btn {
       background: var(--glass);
       border: 1px solid rgba(255,255,255,0.1);
@@ -69,136 +100,265 @@
       padding: 15px;
       border-radius: 20px;
       cursor: pointer;
-      transition: 0.3s;
+      transition: border-color 0.3s, transform 0.3s;
+      line-height: 1;
     }
-    .choice-btn:hover { border-color: var(--accent-blue); transform: translateY(-5px); }
+    .choice-btn:hover:not(:disabled) {
+      border-color: var(--accent-blue);
+      transform: translateY(-5px);
+    }
+    .choice-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
 
-    #msg { font-weight: bold; margin-top: 20px; min-height: 1.5em; letter-spacing: 1px; text-transform: uppercase; }
+    #msg {
+      font-weight: bold;
+      margin: 20px 0 0;
+      min-height: 1.6em;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-size: 0.95rem;
+      color: white;
+      transition: color 0.3s;
+    }
+
+    .reset-btn {
+      margin-top: 20px;
+      background: none;
+      border: none;
+      color: #475569;
+      cursor: pointer;
+      font-size: 0.8rem;
+      text-decoration: underline;
+      padding: 5px 10px;
+    }
+    .reset-btn:hover { color: #94a3b8; }
+
+    /* AdSense Ad Slot */
+    .ad-slot {
+      margin-top: 24px;
+      width: 100%;
+      max-width: 420px;
+      min-height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   </style>
 </head>
 <body>
 
+  <h1>Rock Paper Scissors Pro</h1>
+
   <div class="game-card">
+
+    <!-- Score Numbers -->
+    <div class="score-row">
+      <span class="score-label">Player</span>
+      <span class="score-label">Computer</span>
+    </div>
+    <div class="score-row" style="margin-bottom: 10px;">
+      <span class="score-num" id="userScore">0</span>
+      <span style="color:#334155; font-size:0.8rem;">FIRST TO 5</span>
+      <span class="score-num" id="compScore">0</span>
+    </div>
+
+    <!-- Progress Bars -->
     <div class="stats">
       <div class="bar-container">
-        <span class="label">PLAYER</span>
         <div class="bar"><div id="userFill" class="fill"></div></div>
       </div>
       <div class="bar-container">
-        <span class="label">COMPUTER</span>
         <div class="bar"><div id="compFill" class="fill"></div></div>
       </div>
     </div>
 
+    <!-- Arena -->
     <div class="arena">
-      <div id="uHand" class="hand">✊</div>
-      <div style="color: #334155; font-weight: bold;">VS</div>
-      <div id="cHand" class="hand">✊</div>
+      <span id="uHand" class="hand" role="img" aria-label="Your choice">✊</span>
+      <span class="vs-text">VS</span>
+      <span id="cHand" class="hand" role="img" aria-label="Computer choice">✊</span>
     </div>
 
-    <p id="msg">Choose Your Weapon</p>
+    <!-- Status Message -->
+    <p id="msg" role="status" aria-live="polite">Choose Your Weapon</p>
 
+    <!-- Choice Buttons -->
     <div class="choices">
-      <button class="choice-btn" onclick="play('rock')">✊</button>
-      <button class="choice-btn" onclick="play('paper')">✋</button>
-      <button class="choice-btn" onclick="play('scissors')">✌️</button>
+      <button class="choice-btn" id="btnRock"     aria-label="Rock"     onclick="play('rock')">✊</button>
+      <button class="choice-btn" id="btnPaper"    aria-label="Paper"    onclick="play('paper')">✋</button>
+      <button class="choice-btn" id="btnScissors" aria-label="Scissors" onclick="play('scissors')">✌️</button>
     </div>
 
-    <button onclick="resetMatch()" style="margin-top:25px; background:none; border:none; color:#475569; cursor:pointer; font-size: 0.8rem; text-decoration: underline;">🔄 Reset Match</button>
+    <button class="reset-btn" onclick="resetMatch()">🔄 Reset Match</button>
+  </div>
+
+  <!-- ✅ GOOGLE ADSENSE AD UNIT — Replace data-ad-* values with your own -->
+  <div class="ad-slot">
+    <!--
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="XXXXXXXXXX"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    -->
   </div>
 
   <script>
-    const winAudio = new Audio('sounds/win.mp3');
-    const loseAudio = new Audio('sounds/lose.mp3');
+    // ─── Web Audio Tones (no external files needed) ───────────────────────────
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
 
-    function playSound(type) {
-      if (type === 'win') {
-        winAudio.currentTime = 0;
-        winAudio.play().catch(e => console.log("Audio play blocked until user interaction."));
-      } else if (type === 'lose') {
-        loseAudio.currentTime = 0;
-        loseAudio.play().catch(e => console.log("Audio play blocked until user interaction."));
+    function ensureAudioCtx() {
+      if (!audioCtx) audioCtx = new AudioCtx();
+    }
+
+    function playTone(type) {
+      try {
+        ensureAudioCtx();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'win') {
+          osc.frequency.setValueAtTime(523, audioCtx.currentTime);       // C5
+          osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1); // E5
+          osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.2); // G5
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+          osc.start(audioCtx.currentTime);
+          osc.stop(audioCtx.currentTime + 0.5);
+        } else if (type === 'lose') {
+          osc.frequency.setValueAtTime(330, audioCtx.currentTime);
+          osc.frequency.setValueAtTime(220, audioCtx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+          osc.start(audioCtx.currentTime);
+          osc.stop(audioCtx.currentTime + 0.5);
+        } else if (type === 'draw') {
+          osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+          osc.start(audioCtx.currentTime);
+          osc.stop(audioCtx.currentTime + 0.3);
+        }
+      } catch (e) {
+        // Audio not supported — fail silently
       }
     }
-  </script>
 
-  <script>
+    // ─── Game State ───────────────────────────────────────────────────────────
     let uScore = 0;
     let cScore = 0;
-    const goal = 5;
+    const GOAL = 5;
     let locked = false;
 
+    const emojis = { rock: '✊', paper: '✋', scissors: '✌️' };
+
+    function setButtons(disabled) {
+      ['btnRock', 'btnPaper', 'btnScissors'].forEach(id => {
+        document.getElementById(id).disabled = disabled;
+      });
+    }
+
     function play(choice) {
-      if (locked || uScore >= goal || cScore >= goal) return;
+      if (locked) return;
       locked = true;
+      setButtons(true);
 
       const items = ['rock', 'paper', 'scissors'];
       const cpu = items[Math.floor(Math.random() * 3)];
-      const emojis = { rock: "✊", paper: "✋", scissors: "✌️" };
 
-      const uEl = document.getElementById('uHand');
-      const cEl = document.getElementById('cHand');
-      const msg = document.getElementById('msg');
+      const uEl  = document.getElementById('uHand');
+      const cEl  = document.getElementById('cHand');
+      const msg  = document.getElementById('msg');
 
-      // Start Shake
-      uEl.innerText = "✊";
-      cEl.innerText = "✊";
+      // Shake animation
+      uEl.textContent = '✊';
+      cEl.textContent = '✊';
       uEl.classList.add('animating');
       cEl.classList.add('animating');
-      msg.innerText = "Battle...";
+      msg.textContent = 'Battle...';
+      msg.style.color = 'white';
 
       setTimeout(() => {
         uEl.classList.remove('animating');
         cEl.classList.remove('animating');
-        uEl.innerText = emojis[choice];
-        cEl.innerText = emojis[cpu];
+        uEl.textContent = emojis[choice];
+        cEl.textContent = emojis[cpu];
 
+        let result;
         if (choice === cpu) {
-          msg.innerText = "DRAW! 🤝";
-          msg.style.color = "white";
-        } 
-        else if (
-          (choice === 'rock' && cpu === 'scissors') ||
-          (choice === 'paper' && cpu === 'rock') ||
+          result = 'draw';
+          msg.textContent = 'DRAW! 🤝';
+          msg.style.color = 'white';
+          playTone('draw');
+        } else if (
+          (choice === 'rock'     && cpu === 'scissors') ||
+          (choice === 'paper'    && cpu === 'rock')     ||
           (choice === 'scissors' && cpu === 'paper')
         ) {
           uScore++;
-          msg.innerText = "POINT FOR YOU! 🔥";
-          msg.style.color = "var(--accent-blue)";
-          playSound('win');
-        } 
-        else {
+          result = 'win';
+          msg.textContent = 'POINT FOR YOU! 🔥';
+          msg.style.color = 'var(--accent-blue)';
+          playTone('win');
+        } else {
           cScore++;
-          msg.innerText = "CPU SCORED! 💀";
-          msg.style.color = "var(--accent-pink)";
-          playSound('lose');
+          result = 'lose';
+          msg.textContent = 'CPU SCORED! 💀';
+          msg.style.color = 'var(--accent-pink)';
+          playTone('lose');
         }
 
-        // Update Progress Bars
-        document.getElementById('userFill').style.width = (uScore / goal * 100) + "%";
-        document.getElementById('compFill').style.width = (cScore / goal * 100) + "%";
+        // Update bars and scores
+        document.getElementById('userFill').style.width  = (uScore / GOAL * 100) + '%';
+        document.getElementById('compFill').style.width  = (cScore / GOAL * 100) + '%';
+        document.getElementById('userScore').textContent = uScore;
+        document.getElementById('compScore').textContent = cScore;
 
-        // Check Winner
-        if (uScore === goal) msg.innerText = "🏆 MATCH CHAMPION!";
-        else if (cScore === goal) msg.innerText = "💀 CPU DOMINATION!";
+        // Check match end
+        if (uScore >= GOAL) {
+          msg.textContent = '🏆 YOU WIN THE MATCH!';
+          msg.style.color = 'var(--accent-blue)';
+          // Keep buttons disabled — match is over
+          locked = false;
+          return;
+        }
+        if (cScore >= GOAL) {
+          msg.textContent = '💀 CPU WINS THE MATCH!';
+          msg.style.color = 'var(--accent-pink)';
+          locked = false;
+          return;
+        }
 
+        // Re-enable buttons for next round
         locked = false;
+        setButtons(false);
       }, 700);
     }
 
     function resetMatch() {
-      uScore = 0; cScore = 0; locked = false;
-      document.getElementById('userFill').style.width = "0%";
-      document.getElementById('compFill').style.width = "0%";
-      document.getElementById('uHand').innerText = "✊";
-      document.getElementById('cHand').innerText = "✊";
-      document.getElementById('msg').innerText = "Choose Your Weapon";
-      document.getElementById('msg').style.color = "white";
+      uScore = 0;
+      cScore = 0;
+      locked = false;
+      setButtons(false);
+      document.getElementById('userFill').style.width  = '0%';
+      document.getElementById('compFill').style.width  = '0%';
+      document.getElementById('userScore').textContent = '0';
+      document.getElementById('compScore').textContent = '0';
+      document.getElementById('uHand').textContent     = '✊';
+      document.getElementById('cHand').textContent     = '✊';
+      const msg = document.getElementById('msg');
+      msg.textContent = 'Choose Your Weapon';
+      msg.style.color = 'white';
     }
   </script>
 
-  <script async="async" data-cfasync="false" src="https://pl29529472.effectivecpmnetwork.com/70a5fb5b9a749f9711fccd87e653c11f/invoke.js"></script>
-  <div id="container-70a5fb5b9a749f9711fccd87e653c11f"></div>
-  <script src="https://pl29643779.effectivecpmnetwork.com/0f/ff/3d/0fff3d9c24531b389bd350b97b1a7d0e.js"></script> 
 </body>
 </html>
