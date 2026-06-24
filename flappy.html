@@ -1,61 +1,259 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Flappy Bird</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Flappy Bird Pro — Tap or press Space to fly through pipes. Beat your high score!">
+  <title>Flappy Bird Pro</title>
+
+  <!-- ✅ PASTE YOUR GOOGLE ADSENSE SCRIPT HERE -->
+  <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@700&display=swap');
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg:      #0f0e1a;
+      --card:    #1a1830;
+      --surface: #232140;
+      --primary: #38bdf8;
+      --accent:  #fbbf24;
+      --success: #4ade80;
+      --danger:  #f87171;
+      --text:    #e2e0f0;
+      --muted:   #6b6880;
+      --border:  rgba(255,255,255,0.07);
+      --radius:  18px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      gap: 14px;
+    }
+
+    /* ── Ad Slots ── */
+    .ad-slot {
+      width: 100%;
+      max-width: 480px;
+      min-height: 90px;
+      background: var(--card);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+    }
+
+    /* ── Header ── */
+    .site-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.3rem;
+      letter-spacing: 3px;
+      color: var(--text);
+      text-align: center;
+    }
+
+    .site-title span {
+      color: var(--primary);
+    }
+
+    /* ── Game Container ── */
     #gameContainer {
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-top: 20px;
+      gap: 12px;
+      width: 100%;
+      max-width: 420px;
     }
 
-    canvas {
-      border: 2px solid #00f7ff;
-      border-radius: 15px;
-      margin-bottom: 10px;
+    /* ── HUD ── */
+    .hud {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
     }
 
-    #themeName {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 5px;
+    .hud-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
     }
 
-    #flappyScore, #highScore {
-      font-size: 18px;
-      font-weight: bold;
-      margin: 5px;
+    .hud-label {
+      font-size: 0.58rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
     }
 
-    .controls button {
-      margin: 5px;
+    .hud-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* ── Canvas ── */
+    #flappyCanvas {
+      border-radius: 16px;
+      border: 2px solid rgba(56,189,248,0.3);
+      display: block;
+      max-width: 100%;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 80px;
+      padding: 11px 8px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.3px;
+    }
+
+    .btn:active { transform: scale(0.96); }
+
+    .btn-reset { background: var(--danger);  color: #fff; }
+    .btn-pause { background: var(--accent);  color: #0f0e1a; }
+    .btn-theme { background: var(--primary); color: #0f0e1a; }
+    .btn-sound { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+
+    /* ── Instructions ── */
+    .instructions {
+      font-size: 0.73rem;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+
+    kbd {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 1px 6px;
+      font-size: 0.7rem;
+      font-family: 'Space Mono', monospace;
+      color: var(--text);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 430px) {
+      #flappyCanvas {
+        width: 340px;
+        height: 425px;
+      }
+      .btn { font-size: 0.75rem; padding: 10px 6px; }
+      .site-title { font-size: 1rem; }
     }
   </style>
 </head>
 <body>
 
-<h2>🕊 Flappy Bird</h2>
-
-<div id="gameContainer">
-  <p id="themeName">Theme: Sky ☁️</p>
-  <canvas id="flappyCanvas" width="400" height="500"></canvas>
-
-  <p id="flappyScore">Score: 0</p>
-  <p id="highScore">High Score: 0</p>
-
-  <div class="controls">
-    <button onclick="resetFlappy()">🔄 Reset</button>
-    <button onclick="togglePause()">⏸ Pause / ▶ Resume</button>
-    <button onclick="switchTheme()">🎨 Switch Theme</button>
+  <!-- TOP AD SLOT -->
+  <div class="ad-slot">
+    <!--
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="XXXXXXXXXX"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    -->
+    AD SPACE
   </div>
-</div>
 
-<script src="flappy.js"></script>
-<script src="sounds.js"></script>
-<script async="async" data-cfasync="false" src="https://pl29529472.effectivecpmnetwork.com/70a5fb5b9a749f9711fccd87e653c11f/invoke.js"></script>
-<div id="container-70a5fb5b9a749f9711fccd87e653c11f"></div>
+  <header>
+    <h1 class="site-title">🕊 FLAPPY BIRD <span>PRO</span></h1>
+  </header>
+
+  <div id="gameContainer">
+
+    <!-- HUD -->
+    <div class="hud">
+      <div class="hud-item">
+        <span class="hud-label">SCORE</span>
+        <span class="hud-value" id="flappyScore">0</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">THEME</span>
+        <span class="hud-value" id="themeName">Sky ☁️</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">BEST</span>
+        <span class="hud-value" id="highScore">0</span>
+      </div>
+    </div>
+
+    <!-- Canvas -->
+    <canvas id="flappyCanvas" width="400" height="500" aria-label="Flappy Bird game canvas"></canvas>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="btn btn-reset" onclick="resetFlappy()">🔄 Reset</button>
+      <button class="btn btn-pause" onclick="togglePause()" id="pauseBtn">⏸ Pause</button>
+      <button class="btn btn-theme" onclick="switchTheme()">🎨 Theme</button>
+      <button class="btn btn-sound" onclick="toggleSound()" id="soundBtn">🔊 Sound</button>
+    </div>
+
+    <!-- Instructions -->
+    <p class="instructions">Press <kbd>Space</kbd> or <kbd>Tap</kbd> to flap &nbsp;|&nbsp; Every 5 pts = faster!</p>
+
+  </div>
+
+  <!-- BOTTOM AD SLOT -->
+  <div class="ad-slot">
+    <!--
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="XXXXXXXXXX"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    -->
+    AD SPACE
+  </div>
+
+  <script src="flappy.js"></script>
+
 </body>
 </html>
-<script src="https://pl29643779.effectivecpmnetwork.com/0f/ff/3d/0fff3d9c24531b389bd350b97b1a7d0e.js"></script>
