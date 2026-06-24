@@ -50,7 +50,6 @@
       transition: background .4s, color .4s;
     }
 
-    /* ── Animated starfield background ── */
     #stars {
       position: fixed;
       inset: 0;
@@ -72,7 +71,6 @@
 
     body.light #stars { display: none; }
 
-    /* ── Noise overlay ── */
     body::before {
       content: '';
       position: fixed;
@@ -82,7 +80,6 @@
       z-index: 1;
     }
 
-    /* ── Header ── */
     header {
       position: sticky;
       top: 0;
@@ -164,7 +161,6 @@
     }
     #themeToggle:hover { transform: rotate(20deg) scale(1.1); }
 
-    /* ── Mobile nav toggle ── */
     #menuToggle {
       display: none;
       background: none;
@@ -204,7 +200,6 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Cookie banner ── */
     #cookieConsent {
       display: none;
       position: fixed;
@@ -243,7 +238,6 @@
     .btn-cookie.accept { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; }
     .btn-cookie.decline { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
 
-    /* ── Main layout ── */
     main {
       position: relative;
       z-index: 2;
@@ -252,7 +246,6 @@
       padding: 40px 20px 60px;
     }
 
-    /* ── Ad unit ── */
     .ad-unit {
       margin: 28px 0;
       text-align: center;
@@ -261,7 +254,6 @@
       overflow: hidden;
     }
 
-    /* ── Hero section ── */
     .hero {
       text-align: center;
       padding: 60px 20px 40px;
@@ -321,7 +313,6 @@
     }
     .stat-label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
 
-    /* ── Glow orbs in hero ── */
     .orb {
       position: absolute;
       border-radius: 50%;
@@ -337,7 +328,6 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Section label ── */
     .section-label {
       display: flex;
       align-items: center;
@@ -358,7 +348,6 @@
       background: linear-gradient(90deg, var(--border), transparent);
     }
 
-    /* ── Slider ── */
     .slider-wrap {
       overflow: hidden;
       border-radius: var(--radius);
@@ -401,7 +390,6 @@
       100% { transform: translateX(-50%); }
     }
 
-    /* ── Game grid ── */
     .games-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -429,12 +417,14 @@
     .game-card:nth-child(7)  { animation-delay: .35s; }
     .game-card:nth-child(8)  { animation-delay: .40s; }
     .game-card:nth-child(9)  { animation-delay: .45s; }
+    .game-card:nth-child(10) { animation-delay: .50s; }
+    .game-card:nth-child(11) { animation-delay: .55s; }
+    .game-card:nth-child(12) { animation-delay: .60s; }
     @keyframes cardIn {
       from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Shimmer on hover */
     .game-card::before {
       content: '';
       position: absolute;
@@ -445,7 +435,6 @@
     }
     .game-card:hover::before { opacity: 1; }
 
-    /* Top accent line */
     .game-card::after {
       content: '';
       position: absolute;
@@ -499,7 +488,21 @@
     }
     .game-card:hover .play-badge { opacity: 1; transform: translateY(0); }
 
-    /* ── Outro ── */
+    /* NEW badge for new games */
+    .new-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: linear-gradient(135deg, #ff6b6b, #ff3355);
+      color: #fff;
+      font-size: .6rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      padding: 3px 8px;
+      border-radius: 100px;
+      text-transform: uppercase;
+    }
+
     .outro-box {
       margin-top: 40px;
       padding: 28px 32px;
@@ -525,7 +528,6 @@
       margin: 0 auto;
     }
 
-    /* ── Footer ── */
     footer {
       position: relative;
       z-index: 2;
@@ -539,7 +541,6 @@
     footer a:hover { color: var(--accent); }
     footer p + p { margin-top: 8px; }
 
-    /* ── Scroll reveal ── */
     .reveal {
       opacity: 0;
       transform: translateY(24px);
@@ -550,7 +551,6 @@
       transform: translateY(0);
     }
 
-    /* ── Toast notification ── */
     #toast {
       position: fixed;
       bottom: 24px;
@@ -571,7 +571,6 @@
     }
     #toast.show { opacity: 1; transform: translateY(0); }
 
-    /* ── Responsive ── */
     @media (max-width: 768px) {
       nav { display: none; }
       #menuToggle { display: flex; align-items: center; }
@@ -593,10 +592,8 @@
 </head>
 <body>
 
-<!-- Starfield -->
 <div id="stars"></div>
 
-<!-- Header -->
 <header>
   <a href="index.html" class="logo">🎮 QAZI GAMES</a>
 
@@ -620,7 +617,6 @@
   </div>
 </header>
 
-<!-- Mobile Menu -->
 <div id="mobileMenu" role="navigation" aria-label="Mobile navigation">
   <a href="index.html">🏠 Home</a>
   <a href="about.html">ℹ️ About</a>
@@ -632,7 +628,6 @@
   <a href="#" onclick="logout();return false;">🚪 Logout</a>
 </div>
 
-<!-- Cookie Consent -->
 <div id="cookieConsent" role="banner">
   We use cookies to personalize content and ads, analyze traffic, and improve your experience.
   <a href="privacy.html">Learn more</a>
@@ -642,7 +637,6 @@
   </div>
 </div>
 
-<!-- Toast -->
 <div id="toast" aria-live="polite"></div>
 
 <main>
@@ -681,30 +675,36 @@
     </div>
   </section>
 
-  <!-- Slider -->
-  <div class="reveal">
-    <div class="slider-wrap" aria-label="Featured games ticker">
-      <div class="slides">
-        <div class="slide" onclick="go('shooting.html')">🚀 Space Shooter</div>
-        <div class="slide" onclick="go('snake.html')">🐍 Snake Game</div>
-        <div class="slide" onclick="go('flappy.html')">🐦 Flappy Bird</div>
-        <div class="slide" onclick="go('neonCarRacingTurbo.html')">🚗 Neon Racing</div>
-        <div class="slide" onclick="go('Hangman.html')">🔤 Hangman</div>
-        <div class="slide" onclick="go('tictactoe.html')">❌ Tic Tac Toe</div>
-        <div class="slide" onclick="go('memory.html')">🧠 Memory Match</div>
-        <!-- doubled for seamless loop -->
-        <div class="slide" onclick="go('shooting.html')">🚀 Space Shooter</div>
-        <div class="slide" onclick="go('snake.html')">🐍 Snake Game</div>
-        <div class="slide" onclick="go('flappy.html')">🐦 Flappy Bird</div>
-        <div class="slide" onclick="go('neonCarRacingTurbo.html')">🚗 Neon Racing</div>
-        <div class="slide" onclick="go('Hangman.html')">🔤 Hangman</div>
-        <div class="slide" onclick="go('tictactoe.html')">❌ Tic Tac Toe</div>
-        <div class="slide" onclick="go('memory.html')">🧠 Memory Match</div>
-      </div>
+  <!-- Marquee slider -->
+  <div class="slider-wrap reveal">
+    <div class="slides">
+      <div class="slide">🎮 Tic Tac Toe</div>
+      <div class="slide">✂️ Rock Paper Scissors</div>
+      <div class="slide">🐍 Snake</div>
+      <div class="slide">🚀 Rocket Game</div>
+      <div class="slide">🔤 Hangman</div>
+      <div class="slide">🏎️ Car Race</div>
+      <div class="slide">🃏 Memory Match</div>
+      <div class="slide">🔢 Number Guess</div>
+      <div class="slide">🐦 Flappy Bird</div>
+      <div class="slide">🔢 2048</div>
+      <div class="slide">🧟 Zombie Survival</div>
+      <!-- Duplicate for seamless loop -->
+      <div class="slide">🎮 Tic Tac Toe</div>
+      <div class="slide">✂️ Rock Paper Scissors</div>
+      <div class="slide">🐍 Snake</div>
+      <div class="slide">🚀 Rocket Game</div>
+      <div class="slide">🔤 Hangman</div>
+      <div class="slide">🏎️ Car Race</div>
+      <div class="slide">🃏 Memory Match</div>
+      <div class="slide">🔢 Number Guess</div>
+      <div class="slide">🐦 Flappy Bird</div>
+      <div class="slide">🔢 2048</div>
+      <div class="slide">🧟 Zombie Survival</div>
     </div>
   </div>
 
-  <!-- Ad Unit 2: Mid -->
+  <!-- Ad Unit 2: Middle -->
   <div class="ad-unit reveal">
     <ins class="adsbygoogle"
          style="display:block"
@@ -715,70 +715,96 @@
     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
   </div>
 
-  <!-- Games Grid -->
+  <!-- All Games -->
   <div class="section-label reveal">
-    <h2>🔥 PLAY NOW</h2>
+    <h2>🕹️ ALL GAMES</h2>
   </div>
 
   <div class="games-grid">
-    <div class="game-card" onclick="go('rps.html')">
-      <span class="game-icon">✊</span>
-      <h3>Rock Paper Scissors</h3>
-      <p>Classic hand game vs the computer</p>
-      <span class="play-badge">▶ Play Now</span>
-    </div>
-    <div class="game-card" onclick="go('tictactoe.html')">
-      <span class="game-icon">❌</span>
+
+    <div class="game-card" onclick="playGame('tictactoe.html')">
+      <span class="game-icon">🎮</span>
       <h3>Tic Tac Toe</h3>
-      <p>Strategic two-player grid game</p>
+      <p>Classic X vs O battle. Play against AI or a friend.</p>
       <span class="play-badge">▶ Play Now</span>
     </div>
-    <div class="game-card" onclick="go('numbergame.html')">
-      <span class="game-icon">🔢</span>
-      <h3>Number Guess</h3>
-      <p>Test your intuition and luck</p>
+
+    <div class="game-card" onclick="playGame('rps.html')">
+      <span class="game-icon">✂️</span>
+      <h3>Rock Paper Scissors</h3>
+      <p>The timeless hand game. Beat the computer!</p>
       <span class="play-badge">▶ Play Now</span>
     </div>
-    <div class="game-card" onclick="go('snake.html')">
+
+    <div class="game-card" onclick="playGame('snake.html')">
       <span class="game-icon">🐍</span>
       <h3>Snake</h3>
-      <p>Retro arcade classic reborn</p>
+      <p>Eat, grow, and avoid walls in this neon classic.</p>
       <span class="play-badge">▶ Play Now</span>
     </div>
-    <div class="game-card" onclick="go('flappy.html')">
-      <span class="game-icon">🐦</span>
-      <h3>Flappy Bird</h3>
-      <p>Tap to fly through the pipes</p>
-      <span class="play-badge">▶ Play Now</span>
-    </div>
-    <div class="game-card" onclick="go('memory.html')">
-      <span class="game-icon">🧠</span>
-      <h3>Memory Match</h3>
-      <p>Flip and pair to train your brain</p>
-      <span class="play-badge">▶ Play Now</span>
-    </div>
-    <div class="game-card" onclick="go('shooting.html')">
+
+    <div class="game-card" onclick="playGame('shooting.html')">
       <span class="game-icon">🚀</span>
-      <h3>Space Shooter</h3>
-      <p>Defend the galaxy from waves</p>
+      <h3>Rocket Game</h3>
+      <p>Launch and navigate your rocket through space.</p>
       <span class="play-badge">▶ Play Now</span>
     </div>
-    <div class="game-card" onclick="go('neonCarRacingTurbo.html')">
-      <span class="game-icon">🚗</span>
-      <h3>Neon Racing</h3>
-      <p>High-speed neon track racing</p>
-      <span class="play-badge">▶ Play Now</span>
-    </div>
-    <div class="game-card" onclick="go('Hangman.html')">
+
+    <div class="game-card" onclick="playGame('hangman.html')">
       <span class="game-icon">🔤</span>
       <h3>Hangman</h3>
-      <p>Guess the word before time's up</p>
+      <p>Guess the word before the hangman is complete.</p>
       <span class="play-badge">▶ Play Now</span>
     </div>
+
+    <div class="game-card" onclick="playGame('neonCarRacingTurbo.html')">
+      <span class="game-icon">🏎️</span>
+      <h3>Car Race</h3>
+      <p>High-speed neon racing. Dodge and survive!</p>
+      <span class="play-badge">▶ Play Now</span>
+    </div>
+
+    <div class="game-card" onclick="playGame('memory.html')">
+      <span class="game-icon">🃏</span>
+      <h3>Memory Match</h3>
+      <p>Flip cards and find matching pairs. Train your brain!</p>
+      <span class="play-badge">▶ Play Now</span>
+    </div>
+
+    <div class="game-card" onclick="playGame('numbergame.html')">
+      <span class="game-icon">🔢</span>
+      <h3>Number Guess</h3>
+      <p>Guess the secret number with hot and cold hints.</p>
+      <span class="play-badge">▶ Play Now</span>
+    </div>
+
+    <div class="game-card" onclick="playGame('flappy.html')">
+      <span class="game-icon">🐦</span>
+      <h3>Flappy Bird</h3>
+      <p>Tap to fly through pipes. Simple but addictive!</p>
+      <span class="play-badge">▶ Play Now</span>
+    </div>
+
+    <div class="game-card" onclick="playGame('2048.html')">
+      <span class="game-icon">🔢</span>
+      <h3>2048</h3>
+      <p>Merge tiles and reach the legendary 2048 tile!</p>
+      <span class="play-badge">▶ Play Now</span>
+    </div>
+
+    <!-- ✅ NEW: Zombie Survival -->
+    <div class="game-card" onclick="playGame('zombie.html')">
+      <span class="new-badge">NEW</span>
+      <span class="game-icon">🧟</span>
+      <h3>Zombie Survival</h3>
+      <p>Survive endless waves, buy weapons, level up your skills!</p>
+      <span class="play-badge">▶ Play Now</span>
+    </div>
+
   </div>
 
   <!-- Ad Unit 3: Bottom -->
-  <div class="ad-unit reveal" style="margin-top:40px;">
+  <div class="ad-unit reveal">
     <ins class="adsbygoogle"
          style="display:block"
          data-ad-client="ca-pub-XXXXXXXXXX"
@@ -788,155 +814,131 @@
     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
   </div>
 
+  <!-- Outro -->
   <div class="outro-box reveal">
     <p>
-      New games added regularly to Qazi Games. No installation needed — everything runs directly in your browser
-      on desktop, tablet, or mobile. Free to play, always.
+      Qazi Games is a growing collection of free browser games — no downloads, no sign-up required.
+      New games are added regularly. Bookmark this page and check back for fresh titles!
     </p>
   </div>
 
 </main>
 
 <footer>
-  <p>&copy; 2026 Qazi Games. All rights reserved.</p>
   <p>
-    <a href="privacy.html">Privacy Policy</a> |
-    <a href="contact.html">Contact Us</a> |
-    <a href="about.html">About</a> |
-    <a href="Terms.html">Terms and Conditions</a>
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="contact.html">Contact</a>
+    <a href="Terms.html">Terms</a>
   </p>
+  <p>© 2024 Qazi Games · All rights reserved · Free online games for everyone</p>
 </footer>
 
 <script>
-  /* ── Starfield ── */
-  (function () {
-    const container = document.getElementById('stars');
-    for (let i = 0; i < 120; i++) {
-      const s = document.createElement('div');
-      s.className = 'star';
-      const size = Math.random() * 2.5 + .5;
-      s.style.cssText = `
-        width:${size}px; height:${size}px;
-        top:${Math.random()*100}%; left:${Math.random()*100}%;
-        --d:${(Math.random()*4+2).toFixed(1)}s;
-        --delay:${(Math.random()*6).toFixed(1)}s;
-        --op:${(Math.random()*.7+.2).toFixed(2)};
-      `;
-      container.appendChild(s);
-    }
-  })();
+  // ── Starfield ──
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 120; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.5 + 0.5;
+    s.style.cssText = `
+      width:${size}px;height:${size}px;
+      top:${Math.random()*100}%;left:${Math.random()*100}%;
+      --d:${2+Math.random()*4}s;
+      --delay:${Math.random()*5}s;
+      --op:${0.3+Math.random()*0.7};
+    `;
+    starsEl.appendChild(s);
+  }
 
-  /* ── Theme ── */
-  (function () {
-    const btns = [document.getElementById('themeToggle'), document.getElementById('themeToggleMobile')];
-    const saved = localStorage.getItem('theme');
-    if (saved === 'light') {
-      document.body.classList.add('light');
-      btns.forEach(b => { if (b) b.textContent = '🌙'; });
-    }
-    btns.forEach(btn => {
-      if (!btn) return;
-      btn.addEventListener('click', function () {
-        const isLight = document.body.classList.toggle('light');
-        btns.forEach(b => { if (b) b.textContent = isLight ? '🌙' : '🌙'; });
-        btns[0].textContent = isLight ? '☀️' : '🌙';
-        btns[1].textContent = isLight ? '☀️' : '🌙';
-        localStorage.setItem('theme', isLight ? 'light' : 'dark');
-      });
-    });
-  })();
+  // ── Theme ──
+  const savedTheme = localStorage.getItem('qzTheme');
+  if (savedTheme === 'light') document.body.classList.add('light');
+  function toggleTheme() {
+    document.body.classList.toggle('light');
+    localStorage.setItem('qzTheme', document.body.classList.contains('light') ? 'light' : 'dark');
+    const icon = document.body.classList.contains('light') ? '🌙' : '☀️';
+    document.getElementById('themeToggle').textContent = icon;
+    document.getElementById('themeToggleMobile').textContent = icon;
+  }
+  document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+  document.getElementById('themeToggleMobile').addEventListener('click', toggleTheme);
 
-  /* ── Show username ── */
-  (function () {
-    const user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-    if (user && user.username) {
-      const name = '👤 ' + user.username;
-      document.getElementById('userNameDisplay').textContent = name;
-      document.getElementById('userNameDisplayMobile').textContent = name;
-    }
-  })();
-
-  /* ── Mobile menu ── */
+  // ── Mobile menu ──
   function toggleMenu() {
     document.getElementById('mobileMenu').classList.toggle('open');
   }
-  document.addEventListener('click', function (e) {
-    const menu = document.getElementById('mobileMenu');
-    const toggle = document.getElementById('menuToggle');
-    if (!menu.contains(e.target) && e.target !== toggle) {
-      menu.classList.remove('open');
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#mobileMenu') && !e.target.closest('#menuToggle')) {
+      document.getElementById('mobileMenu').classList.remove('open');
     }
   });
 
-  /* ── Navigate ── */
-  function go(page) {
-    const user = localStorage.getItem('loggedInUser');
-    if (!user) {
-      localStorage.setItem('redirectGame', page);
-      showToast('Please sign in to play! 🎮');
-      setTimeout(() => { window.location.href = 'signup.html'; }, 1200);
-    } else {
-      window.location.href = page;
+  // ── Auth ──
+  function logout() {
+    localStorage.removeItem('qzLoggedIn');
+    localStorage.removeItem('qzUser');
+    showToast('Logged out successfully');
+    setTimeout(() => location.reload(), 800);
+  }
+  function checkAuth() {
+    const user = localStorage.getItem('qzUser');
+    if (user) {
+      document.getElementById('userNameDisplay').textContent = '👤 ' + user;
+      document.getElementById('userNameDisplayMobile').textContent = '👤 ' + user;
     }
   }
+  checkAuth();
 
-  /* ── Logout ── */
-  function logout() {
-    localStorage.removeItem('loggedInUser');
-    showToast('Logged out. See you soon! 👋');
-    setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+  // ── Cookie consent ──
+  function acceptCookies() {
+    localStorage.setItem('qzCookies', 'accepted');
+    document.getElementById('cookieConsent').style.display = 'none';
+  }
+  function declineCookies() {
+    localStorage.setItem('qzCookies', 'declined');
+    document.getElementById('cookieConsent').style.display = 'none';
+  }
+  if (!localStorage.getItem('qzCookies')) {
+    setTimeout(() => document.getElementById('cookieConsent').style.display = 'block', 1500);
   }
 
-  /* ── Toast ── */
+  // ── Toast ──
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2800);
+    setTimeout(() => t.classList.remove('show'), 3000);
   }
 
-  /* ── Cookie consent ── */
-  function acceptCookies() {
-    localStorage.setItem('cookieConsent', 'accepted');
-    document.getElementById('cookieConsent').style.display = 'none';
-  }
-  function declineCookies() {
-    localStorage.setItem('cookieConsent', 'declined');
-    document.getElementById('cookieConsent').style.display = 'none';
-  }
-  if (!localStorage.getItem('cookieConsent')) {
-    setTimeout(() => {
-      document.getElementById('cookieConsent').style.display = 'block';
-    }, 1500);
+  // ── Play game ──
+  function playGame(url) {
+    showToast('Loading game...');
+    setTimeout(() => window.location.href = url, 300);
   }
 
-  /* ── Animated counters ── */
-  function animateCount(el, target, suffix) {
+  // ── Animated counters ──
+  function animateCounter(el, target, suffix = '') {
     let start = 0;
-    const step = target / 60;
+    const step = Math.ceil(target / 60);
     const timer = setInterval(() => {
-      start += step;
-      if (start >= target) { start = target; clearInterval(timer); }
-      el.textContent = Math.floor(start) + (suffix || '');
-    }, 25);
+      start = Math.min(start + step, target);
+      el.textContent = start + suffix;
+      if (start >= target) clearInterval(timer);
+    }, 30);
   }
   setTimeout(() => {
-    animateCount(document.getElementById('counter1'), 9, '+');
-    animateCount(document.getElementById('counter2'), 500, '+');
+    animateCounter(document.getElementById('counter1'), 11);
+    animateCounter(document.getElementById('counter2'), 5000, '+');
   }, 600);
 
-  /* ── Scroll reveal ── */
+  // ── Scroll reveal ──
   const revealEls = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver((entries) => {
+  const observer = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
-  }, { threshold: .12 });
+  }, { threshold: 0.1 });
   revealEls.forEach(el => observer.observe(el));
-
-  /* ── Show mobile theme btn on small screens ── */
-  if (window.innerWidth <= 768) {
-    const mob = document.getElementById('themeToggleMobile');
-    if (mob) mob.style.display = 'flex';
-  }
 </script>
 
 </body>
